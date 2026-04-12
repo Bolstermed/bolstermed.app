@@ -1,0 +1,1404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BolsterMed - Provider Reference Evaluation</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!--
+    ============================================================================
+    SUPABASE RLS SETUP
+    ============================================================================
+
+    RUN THIS IN THE SUPABASE SQL EDITOR to allow anonymous survey access:
+    These policies let the survey page read invitations by token and write responses.
+
+    CREATE POLICY "Public can read invitations by token" ON survey_invitations FOR SELECT USING (true);
+    CREATE POLICY "Public can update invitation status" ON survey_invitations FOR UPDATE USING (true);
+    CREATE POLICY "Public can insert responses" ON survey_responses FOR INSERT WITH CHECK (true);
+    CREATE POLICY "Public can read survey configs" ON survey_configs FOR SELECT USING (true);
+    ============================================================================
+    -->
+
+    <style>
+        /* ===== CSS Variables ===== */
+        :root {
+            --navy: #0f1f35;
+            --navy-mid: #162840;
+            --teal: #2db89a;
+            --teal-dim: #1e8f78;
+            --cream: #f4f1ec;
+            --cream-dark: #e8e4dc;
+            --white: #ffffff;
+            --text-dark: #0f1f35;
+            --text-mid: #4a5568;
+            --text-light: #8a97a8;
+            --danger: #c0392b;
+            --danger-light: #fdf0ef;
+            --danger-border: #e8b4b0;
+        }
+
+        /* ===== Reset & Base Styles ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            font-family: 'DM Sans', sans-serif;
+            color: var(--text-dark);
+            background-color: var(--cream);
+            min-height: 100vh;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+        }
+
+        /* ===== Header ===== */
+        header {
+            background-color: var(--navy);
+            color: var(--white);
+            padding: 1.5rem 2rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .logo-med {
+            color: var(--teal);
+        }
+
+        .tagline {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-left: auto;
+        }
+
+        /* ===== Main Container ===== */
+        main {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            header {
+                padding: 1rem 1.5rem;
+            }
+
+            main {
+                padding: 1.5rem 1rem;
+            }
+
+            .header-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .tagline {
+                margin-left: 0;
+                margin-top: 0.5rem;
+            }
+        }
+
+        /* ===== Loading State ===== */
+        .loading-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 60vh;
+            gap: 2rem;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--cream-dark);
+            border-top: 4px solid var(--teal);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: var(--text-mid);
+            font-size: 1rem;
+        }
+
+        /* ===== Error/Status Messages ===== */
+        .message-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 60vh;
+            gap: 1.5rem;
+            text-align: center;
+        }
+
+        .message-box {
+            background-color: var(--white);
+            border: 2px solid var(--navy-mid);
+            border-radius: 12px;
+            padding: 3rem 2rem;
+            max-width: 500px;
+        }
+
+        .message-box h2 {
+            font-size: 1.75rem;
+            margin-bottom: 1rem;
+            color: var(--navy);
+        }
+
+        .message-box p {
+            color: var(--text-mid);
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .error-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        /* ===== Hero Section ===== */
+        .hero {
+            background-color: var(--navy-mid);
+            color: var(--white);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .hero-header {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .role-badge {
+            background-color: var(--teal);
+            color: var(--navy);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .hero-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .hero-description {
+            color: var(--text-light);
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .hero-stats {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-label {
+            color: var(--text-light);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-value {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--white);
+        }
+
+        @media (max-width: 600px) {
+            .hero {
+                padding: 1.5rem;
+            }
+
+            .hero-title {
+                font-size: 1.5rem;
+            }
+
+            .hero-stats {
+                gap: 1rem;
+            }
+        }
+
+        /* ===== Progress Bar ===== */
+        .progress-container {
+            margin-bottom: 2rem;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background-color: var(--navy-mid);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: var(--teal);
+            transition: width 0.3s ease;
+            border-radius: 10px;
+        }
+
+        /* ===== Form Container ===== */
+        .form-container {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* ===== Section Divider ===== */
+        .section-divider {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-number {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            background-color: var(--navy-mid);
+            color: var(--teal);
+            border-radius: 50%;
+            font-weight: 600;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            color: var(--navy);
+            flex-grow: 1;
+        }
+
+        /* ===== Question Card ===== */
+        .question-card {
+            background-color: var(--white);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--cream-dark);
+            transition: box-shadow 0.2s ease;
+        }
+
+        .question-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .question-text {
+            font-size: 1.05rem;
+            color: var(--text-dark);
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+
+        .required-indicator {
+            color: var(--danger);
+            margin-left: 0.25rem;
+        }
+
+        /* ===== Radio/Choice Options ===== */
+        .options-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 1rem;
+            background-color: var(--cream);
+            border: 2px solid transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .option-label:hover {
+            background-color: var(--cream-dark);
+        }
+
+        .option-label.selected {
+            background-color: var(--teal);
+            color: var(--white);
+            border-color: var(--teal-dim);
+        }
+
+        .option-label.danger {
+            background-color: var(--danger-light);
+            border-color: var(--danger-border);
+        }
+
+        .option-label.danger.selected {
+            background-color: var(--danger);
+            color: var(--white);
+            border-color: var(--danger);
+        }
+
+        .option-radio {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--text-mid);
+            border-radius: 50%;
+            flex-shrink: 0;
+            margin-top: 2px;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .option-label.selected .option-radio {
+            border-color: var(--white);
+            background-color: var(--white);
+        }
+
+        .option-label.selected .option-radio::after {
+            content: '';
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background-color: var(--teal);
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .option-label.danger.selected .option-radio::after {
+            background-color: var(--danger);
+        }
+
+        .option-content {
+            flex-grow: 1;
+        }
+
+        .option-text {
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .option-description {
+            font-size: 0.875rem;
+            opacity: 0.8;
+            margin-top: 0.25rem;
+        }
+
+        .option-label.selected .option-description {
+            opacity: 0.95;
+        }
+
+        /* ===== Alert Message ===== */
+        .alert-box {
+            margin-top: 1rem;
+            padding: 0.75rem 1rem;
+            background-color: rgba(192, 57, 43, 0.1);
+            border-left: 3px solid var(--danger);
+            border-radius: 4px;
+            font-size: 0.9rem;
+            color: var(--danger);
+        }
+
+        /* ===== Text Input ===== */
+        .textarea-wrapper {
+            position: relative;
+            margin-top: 0.5rem;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 1rem;
+            border: 2px solid var(--cream-dark);
+            border-radius: 8px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 1rem;
+            color: var(--text-dark);
+            resize: vertical;
+            transition: border-color 0.2s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--teal);
+        }
+
+        textarea::placeholder {
+            color: var(--text-light);
+        }
+
+        /* ===== Mic Button ===== */
+        .mic-button {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 50%;
+            background-color: var(--navy);
+            color: var(--white);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            z-index: 10;
+        }
+
+        .mic-button:hover {
+            background-color: var(--navy-mid);
+            transform: scale(1.05);
+        }
+
+        .mic-button.recording {
+            background-color: var(--danger);
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .mic-icon {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* ===== Submit Button ===== */
+        .button-container {
+            margin-top: 2rem;
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        button.submit-btn, button.cancel-btn {
+            padding: 0.875rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        button.submit-btn {
+            background-color: var(--teal);
+            color: var(--white);
+        }
+
+        button.submit-btn:hover:not(:disabled) {
+            background-color: var(--teal-dim);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(45, 184, 154, 0.3);
+        }
+
+        button.submit-btn:disabled {
+            background-color: var(--cream-dark);
+            color: var(--text-light);
+            cursor: not-allowed;
+        }
+
+        button.cancel-btn {
+            background-color: transparent;
+            color: var(--text-mid);
+            border: 2px solid var(--cream-dark);
+        }
+
+        button.cancel-btn:hover {
+            border-color: var(--text-mid);
+        }
+
+        /* ===== Success Screen ===== */
+        .success-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 60vh;
+            gap: 2rem;
+            text-align: center;
+        }
+
+        .checkmark {
+            width: 80px;
+            height: 80px;
+            background-color: var(--teal);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: scaleIn 0.4s ease;
+        }
+
+        .checkmark::after {
+            content: '✓';
+            font-size: 3rem;
+            color: var(--white);
+            font-weight: 300;
+        }
+
+        @keyframes scaleIn {
+            from {
+                transform: scale(0);
+            }
+            to {
+                transform: scale(1);
+            }
+        }
+
+        .success-message {
+            background-color: var(--white);
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 500px;
+        }
+
+        .success-message h2 {
+            font-size: 1.75rem;
+            color: var(--navy);
+            margin-bottom: 1rem;
+        }
+
+        .success-message p {
+            color: var(--text-mid);
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        /* ===== Hidden Elements ===== */
+        [hidden] {
+            display: none !important;
+        }
+
+        /* ===== Scroll Behavior ===== */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* ===== Conditional Follow-up ===== */
+        .follow-up-container {
+            margin-top: 1.5rem;
+            padding-left: 1rem;
+            border-left: 3px solid var(--teal);
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+        }
+
+        .follow-up-label {
+            font-size: 0.875rem;
+            color: var(--teal);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo">Bolster<span class="logo-med">Med</span></div>
+            <div class="tagline">Reference Intelligence Platform</div>
+        </div>
+    </header>
+
+    <main id="app">
+        <!-- Content will be rendered here -->
+    </main>
+
+    <script>
+        // ============================================================================
+        // SUPABASE CLIENT SETUP
+        // ============================================================================
+        const SUPABASE_URL = 'https://apluotdtsithufnrfdhv.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwbHVvdGR0c2l0aHVmbnJmZGh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1MTI3MDcsImV4cCI6MjA5MTA4ODcwN30.JIEJtzJl67INwLt2jWNT6v2C4aDy1UGh9K-v59smjK0';
+
+        const { createClient } = window.supabase;
+        const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // ============================================================================
+        // APP STATE
+        // ============================================================================
+        const app = {
+            currentRoute: null,
+            routeParams: null,
+            surveyConfig: null,
+            invitation: null,
+            answers: {},
+            isPreviewMode: false,
+
+            init() {
+                window.addEventListener('popstate', () => this.handleRouteChange());
+                this.handleRouteChange();
+            },
+
+            handleRouteChange() {
+                // Support both clean URLs (/survey/token) and hash URLs (#/survey/token)
+                let route = '';
+                let param = '';
+
+                const hash = window.location.hash;
+                if (hash && hash.length > 2) {
+                    // Hash-based routing (fallback for local testing)
+                    const parts = hash.replace('#/', '').split('/');
+                    route = parts[0] || '';
+                    param = parts[1] || '';
+                } else {
+                    // Clean URL routing (production)
+                    const parts = window.location.pathname.split('/').filter(Boolean);
+                    route = parts[0] || '';
+                    param = parts[1] || '';
+                }
+
+                if (route === 'survey' && param) {
+                    this.loadSurveyByToken(param);
+                } else if (route === 'preview' && param) {
+                    this.loadSurveyByRoleId(param);
+                } else {
+                    this.showMessage('No survey selected', 'Please use a valid survey link or preview URL.', 'error');
+                }
+            },
+
+            async loadSurveyByToken(token) {
+                this.isPreviewMode = false;
+                this.showLoading('Loading your survey...');
+
+                try {
+                    // Step 1: Fetch invitation by token
+                    const { data: invitation, error: invError } = await db
+                        .from('survey_invitations')
+                        .select('*')
+                        .eq('token', token)
+                        .single();
+
+                    if (invError || !invitation) {
+                        this.showMessage('Invalid Survey Link', 'This survey link is invalid or has expired. Please contact the person who sent it.', 'error');
+                        return;
+                    }
+
+                    this.invitation = invitation;
+
+                    // Step 2: Check status
+                    if (invitation.status === 'completed') {
+                        this.showMessage(
+                            'Already Submitted',
+                            'This reference has already been submitted. Thank you for your feedback!',
+                            'info'
+                        );
+                        return;
+                    }
+
+                    if (invitation.status === 'expired' || (invitation.expires_at && new Date(invitation.expires_at) < new Date())) {
+                        this.showMessage(
+                            'Survey Expired',
+                            'This survey link has expired. Please contact the person who sent it.',
+                            'error'
+                        );
+                        return;
+                    }
+
+                    // Step 3: Update status to 'opened' if pending
+                    if (invitation.status === 'pending') {
+                        await db
+                            .from('survey_invitations')
+                            .update({ status: 'opened', opened_at: new Date().toISOString() })
+                            .eq('id', invitation.id);
+                    }
+
+                    // Step 4: Fetch survey config
+                    const { data: configData, error: configError } = await db
+                        .from('survey_configs')
+                        .select('config')
+                        .eq('role_id', invitation.role_id)
+                        .single();
+
+                    if (configError || !configData) {
+                        this.showMessage('Survey Not Found', 'The survey configuration could not be loaded. Please try again later.', 'error');
+                        return;
+                    }
+
+                    this.surveyConfig = configData.config;
+                    this.renderSurvey();
+                } catch (error) {
+                    console.error('Error loading survey:', error);
+                    this.showMessage('Error', 'An unexpected error occurred. Please try again.', 'error');
+                }
+            },
+
+            async loadSurveyByRoleId(roleId) {
+                this.isPreviewMode = true;
+                this.showLoading('Loading preview...');
+
+                try {
+                    const { data: configData, error: configError } = await db
+                        .from('survey_configs')
+                        .select('config')
+                        .eq('role_id', roleId)
+                        .single();
+
+                    if (configError || !configData) {
+                        this.showMessage('Survey Not Found', 'No survey configuration found for this role.', 'error');
+                        return;
+                    }
+
+                    this.surveyConfig = configData.config;
+                    this.renderSurvey();
+                } catch (error) {
+                    console.error('Error loading survey:', error);
+                    this.showMessage('Error', 'An unexpected error occurred. Please try again.', 'error');
+                }
+            },
+
+            renderSurvey() {
+                if (!this.surveyConfig) return;
+
+                const config = this.surveyConfig;
+                const container = document.getElementById('app');
+
+                let html = '';
+
+                // Hero Section
+                html += `
+                    <div class="hero">
+                        <div class="hero-header">
+                            <span class="role-badge">${this.escapeHtml(config.roleType)}</span>
+                        </div>
+                        <h1 class="hero-title">Provider Reference Evaluation</h1>
+                        <p class="hero-description">${this.escapeHtml(config.title)}</p>
+                        <div class="hero-stats">
+                            <div class="stat">
+                                <span class="stat-label">Estimated Time</span>
+                                <span class="stat-value">${config.estimatedMinutes} min</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Questions</span>
+                                <span class="stat-value">${this.countQuestions(config)}</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Privacy</span>
+                                <span class="stat-value">100% Confidential</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // Progress Bar
+                html += `
+                    <div class="progress-container">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 0%"></div>
+                        </div>
+                    </div>
+                `;
+
+                // Form
+                html += '<form class="form-container" id="surveyForm">';
+
+                config.sections.forEach((section, sectionIndex) => {
+                    html += `
+                        <div>
+                            <div class="section-divider">
+                                <div class="section-number">${sectionIndex + 1}</div>
+                                <h2 class="section-title">${this.escapeHtml(section.title)}</h2>
+                            </div>
+                    `;
+
+                    section.questions.forEach((question) => {
+                        html += this.renderQuestion(question, section.id);
+                    });
+
+                    html += '</div>';
+                });
+
+                // Submit Button
+                html += `
+                    <div class="button-container">
+                        ${!this.isPreviewMode ? '<button type="button" class="cancel-btn" onclick="app.goHome()">Cancel</button>' : ''}
+                        <button type="submit" class="submit-btn" id="submitBtn" disabled>
+                            ${this.isPreviewMode ? 'Preview Submit' : 'Submit Reference'}
+                        </button>
+                    </div>
+                `;
+
+                html += '</form>';
+
+                container.innerHTML = html;
+
+                // Attach event listeners
+                document.getElementById('surveyForm').addEventListener('submit', (e) => this.handleSubmit(e));
+                this.attachQuestionListeners();
+            },
+
+            renderQuestion(question, sectionId) {
+                if (question.showWhen && !this.shouldShowQuestion(question)) {
+                    return '';
+                }
+
+                let html = `<div class="question-card" data-question-id="${question.id}" data-section-id="${sectionId}">`;
+                html += `<div class="question-text">`;
+                html += this.escapeHtml(question.text);
+                if (question.required) {
+                    html += '<span class="required-indicator">*</span>';
+                }
+                html += '</div>';
+
+                if (question.type === 'single_choice') {
+                    html += this.renderSingleChoice(question);
+                } else if (question.type === 'open_text') {
+                    html += this.renderOpenText(question);
+                }
+
+                html += '</div>';
+
+                return html;
+            },
+
+            renderSingleChoice(question) {
+                let html = '<div class="options-group">';
+
+                question.options.forEach((option) => {
+                    const isSelected = this.answers[question.id] === option.value;
+                    const isDanger = option.flag === 'danger';
+                    const selectedClass = isSelected ? 'selected' : '';
+                    const dangerClass = isDanger ? 'danger' : '';
+
+                    html += `
+                        <label class="option-label ${selectedClass} ${dangerClass}" data-question-id="${question.id}" data-option-value="${this.escapeHtml(option.value)}">
+                            <div class="option-radio"></div>
+                            <div class="option-content">
+                                <div class="option-text">${this.escapeHtml(option.label)}</div>
+                    `;
+
+                    if (option.description) {
+                        html += `<div class="option-description">${this.escapeHtml(option.description)}</div>`;
+                    }
+
+                    html += '</div></label>';
+                });
+
+                html += '</div>';
+
+                // Conditional follow-up
+                if (question.conditionalFollowUp) {
+                    const followUpQuestion = question.conditionalFollowUp.question;
+                    const isVisible = this.answers[question.id] === question.conditionalFollowUp.triggerValue;
+
+                    html += `<div class="follow-up-container" data-follow-up-for="${question.id}" ${!isVisible ? 'hidden' : ''}>`;
+                    html += `<div class="follow-up-label">Follow-up</div>`;
+                    html += this.renderQuestion(followUpQuestion, 'follow-up');
+                    html += '</div>';
+                }
+
+                return html;
+            },
+
+            renderOpenText(question) {
+                let html = '<div class="textarea-wrapper">';
+                const currentValue = this.answers[question.id] || '';
+                const placeholder = question.placeholder || 'Enter your response...';
+
+                html += `
+                    <textarea
+                        data-question-id="${question.id}"
+                        ${question.required ? 'required' : ''}
+                        placeholder="${this.escapeHtml(placeholder)}"
+                    >${this.escapeHtml(currentValue)}</textarea>
+                `;
+
+                if (question.speechToText) {
+                    html += `
+                        <button type="button" class="mic-button" title="Tap to dictate" data-question-id="${question.id}">
+                            <svg class="mic-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 1a3 3 0 0 0-3 3v12a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                                <line x1="12" y1="19" x2="12" y2="23"></line>
+                                <line x1="8" y1="23" x2="16" y2="23"></line>
+                            </svg>
+                        </button>
+                    `;
+                }
+
+                html += '</div>';
+
+                return html;
+            },
+
+            attachQuestionListeners() {
+                // Radio/choice listeners
+                document.querySelectorAll('.option-label').forEach((label) => {
+                    label.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const questionId = label.dataset.questionId;
+                        const optionValue = label.dataset.optionValue;
+
+                        this.answers[questionId] = optionValue;
+                        this.updateQuestionUI(questionId);
+                        this.updateProgress();
+                        this.updateSubmitButton();
+
+                        // Show/hide follow-ups
+                        this.updateFollowUps();
+
+                        // Show alerts if any
+                        const question = this.getQuestionById(questionId);
+                        if (question) {
+                            const option = question.options.find(o => o.value === optionValue);
+                            if (option && option.alert) {
+                                this.showAlertForQuestion(questionId, option.alert);
+                            }
+                        }
+                    });
+                });
+
+                // Textarea listeners
+                document.querySelectorAll('textarea').forEach((textarea) => {
+                    textarea.addEventListener('change', (e) => {
+                        this.answers[e.target.dataset.questionId] = e.target.value;
+                        this.updateProgress();
+                        this.updateSubmitButton();
+                    });
+
+                    textarea.addEventListener('input', (e) => {
+                        this.answers[e.target.dataset.questionId] = e.target.value;
+                    });
+                });
+
+                // Mic button listeners
+                document.querySelectorAll('.mic-button').forEach((button) => {
+                    button.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        this.startSpeechToText(button);
+                    });
+                });
+            },
+
+            updateQuestionUI(questionId) {
+                const questionCard = document.querySelector(`[data-question-id="${questionId}"]`);
+                if (!questionCard) return;
+
+                const options = questionCard.querySelectorAll('.option-label');
+                options.forEach((label) => {
+                    if (label.dataset.optionValue === this.answers[questionId]) {
+                        label.classList.add('selected');
+                    } else {
+                        label.classList.remove('selected');
+                    }
+                });
+            },
+
+            updateFollowUps() {
+                document.querySelectorAll('[data-follow-up-for]').forEach((followUp) => {
+                    const questionId = followUp.dataset.followUpFor;
+                    const question = this.getQuestionById(questionId);
+
+                    if (question && question.conditionalFollowUp) {
+                        const isVisible = this.answers[questionId] === question.conditionalFollowUp.triggerValue;
+                        followUp.hidden = !isVisible;
+                    }
+                });
+            },
+
+            showAlertForQuestion(questionId, alertText) {
+                const questionCard = document.querySelector(`[data-question-id="${questionId}"]`);
+                if (!questionCard) return;
+
+                const existingAlert = questionCard.querySelector('.alert-box');
+                if (existingAlert) {
+                    existingAlert.remove();
+                }
+
+                const alertBox = document.createElement('div');
+                alertBox.className = 'alert-box';
+                alertBox.textContent = alertText;
+                questionCard.appendChild(alertBox);
+            },
+
+            shouldShowQuestion(question) {
+                if (!question.showWhen) return true;
+
+                const { questionId, branch } = question.showWhen;
+                const answer = this.answers[questionId];
+
+                if (!answer) return false;
+
+                const question_ = this.getQuestionById(questionId);
+                if (!question_) return false;
+
+                const option = question_.options.find(o => o.value === answer);
+                return option && option.branch === branch;
+            },
+
+            updateProgress() {
+                const config = this.surveyConfig;
+                const visibleQuestions = this.getAllVisibleQuestions();
+                const answeredQuestions = visibleQuestions.filter((q) => {
+                    return this.answers[q.id] !== undefined && this.answers[q.id] !== '';
+                });
+
+                const progress = visibleQuestions.length > 0 ? (answeredQuestions.length / visibleQuestions.length) * 100 : 0;
+                const progressFill = document.querySelector('.progress-fill');
+                if (progressFill) {
+                    progressFill.style.width = progress + '%';
+                }
+            },
+
+            updateSubmitButton() {
+                const submitBtn = document.getElementById('submitBtn');
+                if (!submitBtn) return;
+
+                const visibleQuestions = this.getAllVisibleQuestions();
+                const requiredQuestions = visibleQuestions.filter(q => q.required);
+
+                const allRequiredAnswered = requiredQuestions.every((q) => {
+                    const answer = this.answers[q.id];
+                    return answer !== undefined && answer !== '';
+                });
+
+                submitBtn.disabled = !allRequiredAnswered;
+            },
+
+            getAllVisibleQuestions() {
+                const config = this.surveyConfig;
+                const allQuestions = [];
+
+                config.sections.forEach((section) => {
+                    section.questions.forEach((question) => {
+                        if (this.shouldShowQuestion(question)) {
+                            allQuestions.push(question);
+
+                            // Include conditional follow-ups
+                            if (question.conditionalFollowUp && this.answers[question.id] === question.conditionalFollowUp.triggerValue) {
+                                allQuestions.push(question.conditionalFollowUp.question);
+                            }
+                        }
+                    });
+                });
+
+                return allQuestions;
+            },
+
+            getQuestionById(id) {
+                const config = this.surveyConfig;
+                let result = null;
+
+                config.sections.forEach((section) => {
+                    section.questions.forEach((question) => {
+                        if (question.id === id) {
+                            result = question;
+                        }
+
+                        if (question.conditionalFollowUp && question.conditionalFollowUp.question.id === id) {
+                            result = question.conditionalFollowUp.question;
+                        }
+                    });
+                });
+
+                return result;
+            },
+
+            async handleSubmit(e) {
+                e.preventDefault();
+
+                if (this.isPreviewMode) {
+                    this.showSuccess('Preview Submitted', 'This was a preview submission. No data was saved.');
+                    return;
+                }
+
+                if (!this.invitation) return;
+
+                const submitBtn = document.getElementById('submitBtn');
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Submitting...';
+
+                try {
+                    // Compute composite score
+                    const compositeScore = this.computeCompositeScore();
+
+                    // Collect flags
+                    const flags = this.collectFlags();
+
+                    // INSERT into survey_responses
+                    const { data: response, error: insertError } = await db
+                        .from('survey_responses')
+                        .insert([
+                            {
+                                invitation_id: this.invitation.id,
+                                candidate_id: this.invitation.candidate_id,
+                                org_id: this.invitation.org_id,
+                                role_id: this.invitation.role_id,
+                                answers: this.answers,
+                                composite_score: compositeScore,
+                                flags: flags,
+                                submitted_at: new Date().toISOString(),
+                            },
+                        ]);
+
+                    if (insertError) {
+                        throw new Error('Failed to save response: ' + insertError.message);
+                    }
+
+                    // UPDATE survey_invitations
+                    const { error: updateError } = await db
+                        .from('survey_invitations')
+                        .update({ status: 'completed', completed_at: new Date().toISOString() })
+                        .eq('id', this.invitation.id);
+
+                    if (updateError) {
+                        throw new Error('Failed to update invitation: ' + updateError.message);
+                    }
+
+                    this.showSuccess('Reference Submitted', 'Thank you for completing the reference evaluation. Your feedback has been recorded.');
+                } catch (error) {
+                    console.error('Error submitting survey:', error);
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = this.isPreviewMode ? 'Preview Submit' : 'Submit Reference';
+
+                    alert('There was an error submitting your response. Please try again.\n\nError: ' + error.message);
+                }
+            },
+
+            computeCompositeScore() {
+                let totalScore = 0;
+                let scoreCount = 0;
+
+                const config = this.surveyConfig;
+
+                config.sections.forEach((section) => {
+                    section.questions.forEach((question) => {
+                        if (question.type === 'single_choice' && this.answers[question.id]) {
+                            const option = question.options.find(o => o.value === this.answers[question.id]);
+                            if (option && typeof option.score === 'number') {
+                                totalScore += option.score;
+                                scoreCount++;
+                            }
+                        }
+
+                        // Handle conditional follow-ups
+                        if (question.conditionalFollowUp && this.answers[question.id] === question.conditionalFollowUp.triggerValue) {
+                            const followUpQuestion = question.conditionalFollowUp.question;
+                            if (followUpQuestion.type === 'single_choice' && this.answers[followUpQuestion.id]) {
+                                const option = followUpQuestion.options.find(o => o.value === this.answers[followUpQuestion.id]);
+                                if (option && typeof option.score === 'number') {
+                                    totalScore += option.score;
+                                    scoreCount++;
+                                }
+                            }
+                        }
+                    });
+                });
+
+                return scoreCount > 0 ? totalScore / scoreCount : null;
+            },
+
+            collectFlags() {
+                const flags = [];
+                const config = this.surveyConfig;
+
+                config.sections.forEach((section) => {
+                    section.questions.forEach((question) => {
+                        if (question.type === 'single_choice' && this.answers[question.id]) {
+                            const option = question.options.find(o => o.value === this.answers[question.id]);
+                            if (option && option.flag === 'danger') {
+                                flags.push(question.id);
+                            }
+                        }
+
+                        // Handle conditional follow-ups
+                        if (question.conditionalFollowUp && this.answers[question.id] === question.conditionalFollowUp.triggerValue) {
+                            const followUpQuestion = question.conditionalFollowUp.question;
+                            if (followUpQuestion.type === 'single_choice' && this.answers[followUpQuestion.id]) {
+                                const option = followUpQuestion.options.find(o => o.value === this.answers[followUpQuestion.id]);
+                                if (option && option.flag === 'danger') {
+                                    flags.push(followUpQuestion.id);
+                                }
+                            }
+                        }
+                    });
+                });
+
+                return flags.length > 0 ? flags : null;
+            },
+
+            startSpeechToText(button) {
+                const questionId = button.dataset.questionId;
+                const textarea = document.querySelector(`textarea[data-question-id="${questionId}"]`);
+
+                if (!textarea) return;
+
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                if (!SpeechRecognition) {
+                    alert('Speech-to-text is not supported in your browser. Please use Chrome, Edge, or Safari.');
+                    return;
+                }
+
+                const recognition = new SpeechRecognition();
+                recognition.continuous = true;
+                recognition.interimResults = true;
+                recognition.language = 'en-US';
+
+                button.classList.add('recording');
+                button.title = 'Listening… tap to stop';
+
+                recognition.onresult = (event) => {
+                    let interimTranscript = '';
+
+                    for (let i = event.resultIndex; i < event.results.length; i++) {
+                        const transcript = event.results[i][0].transcript;
+
+                        if (event.results[i].isFinal) {
+                            textarea.value += (textarea.value ? ' ' : '') + transcript;
+                            this.answers[questionId] = textarea.value;
+                            this.updateProgress();
+                            this.updateSubmitButton();
+                        } else {
+                            interimTranscript += transcript;
+                        }
+                    }
+                };
+
+                recognition.onerror = (event) => {
+                    if (event.error !== 'no-speech') {
+                        console.error('Speech recognition error:', event.error);
+                    }
+                };
+
+                recognition.onend = () => {
+                    button.classList.remove('recording');
+                    button.title = 'Tap to dictate';
+                };
+
+                button.onclick = (e) => {
+                    e.preventDefault();
+                    recognition.abort();
+                };
+
+                recognition.start();
+            },
+
+            countQuestions(config) {
+                let count = 0;
+                config.sections.forEach((section) => {
+                    count += section.questions.length;
+                });
+                return count;
+            },
+
+            showLoading(message) {
+                const container = document.getElementById('app');
+                container.innerHTML = `
+                    <div class="loading-container">
+                        <div class="spinner"></div>
+                        <p class="loading-text">${this.escapeHtml(message)}</p>
+                    </div>
+                `;
+            },
+
+            showMessage(title, message, type = 'info') {
+                const container = document.getElementById('app');
+                const icon = type === 'error' ? '⚠️' : type === 'info' ? 'ℹ️' : '✓';
+
+                container.innerHTML = `
+                    <div class="message-container">
+                        <div style="font-size: 3rem;">${icon}</div>
+                        <div class="message-box">
+                            <h2>${this.escapeHtml(title)}</h2>
+                            <p>${this.escapeHtml(message)}</p>
+                        </div>
+                    </div>
+                `;
+            },
+
+            showSuccess(title, message) {
+                const container = document.getElementById('app');
+
+                container.innerHTML = `
+                    <div class="success-container">
+                        <div class="checkmark"></div>
+                        <div class="success-message">
+                            <h2>${this.escapeHtml(title)}</h2>
+                            <p>${this.escapeHtml(message)}</p>
+                        </div>
+                    </div>
+                `;
+            },
+
+            goHome() {
+                if (confirm('Are you sure you want to cancel? Your progress will not be saved.')) {
+                    window.location.href = '#/';
+                }
+            },
+
+            escapeHtml(text) {
+                if (!text) return '';
+                const map = {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;',
+                };
+                return text.replace(/[&<>"']/g, (m) => map[m]);
+            },
+        };
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', () => app.init());
+    </script>
+</body>
+</html>
