@@ -1184,23 +1184,23 @@ $$ LANGUAGE SQL;
                 const { data: authData, error: authError } = await db.auth.signUp({
                     email,
                     password,
+                    options: {
+                        data: { org_name: org, full_name: fullName }
+                    }
                 });
                 if (authError) throw authError;
 
-                // Create org and user
-                const { data: rpcData, error: rpcError } = await db.rpc('create_org_and_user', {
-                    org_name: org,
-                    user_full_name: fullName,
-                });
-                if (rpcError) throw rpcError;
+                // Store org info for after email confirmation
+                localStorage.setItem('bolstermed_pending_org', org);
+                localStorage.setItem('bolstermed_pending_name', fullName);
 
-                document.getElementById('signup-success').textContent = 'Account created! Please check your email to confirm, then sign in.';
-                document.getElementById('signup-success').classList.remove('hidden');
+                // Show confirmation message immediately
                 document.getElementById('signup-form').reset();
-
-                setTimeout(() => {
-                    document.getElementById('toggle-login').click();
-                }, 2000);
+                document.getElementById('signup-form').style.display = 'none';
+                document.getElementById('signup-success').innerHTML = '<strong style="font-size:18px;">Check your email!</strong><br><br>We sent a confirmation link to <strong>' + email + '</strong>. Click the link in the email, then come back here and sign in.';
+                document.getElementById('signup-success').classList.remove('hidden');
+                document.getElementById('signup-success').style.padding = '24px';
+                document.getElementById('signup-success').style.textAlign = 'center';
             } catch (err) {
                 document.getElementById('signup-error').textContent = err.message;
                 document.getElementById('signup-error').classList.remove('hidden');
@@ -1228,7 +1228,27 @@ $$ LANGUAGE SQL;
                     .eq('id', state.user.id)
                     .single();
 
-                if (userError || !userData) throw new Error('User not found in system');
+                if (userError || !userData) {
+                    // User record doesn't exist yet — create org and user via RPC
+                    const pendingOrg = localStorage.getItem('bolstermed_pending_org');
+                    const pendingName = localStorage.getItem('bolstermed_pending_name');
+
+                    if (pendingOrg && pendingName) {
+                        const { data: rpcData, error: rpcError } = await db.rpc('create_org_and_user', {
+                            org_name: pendingOrg,
+                            user_full_name: pendingName,
+                        });
+                        if (rpcError) throw rpcError;
+
+                        localStorage.removeItem('bolstermed_pending_org');
+                        localStorage.removeItem('bolstermed_pending_name');
+
+                        // Now load the newly created user/org
+                        return await loadUserOrg();
+                    } else {
+                        throw new Error('User not found in system. Please sign up first.');
+                    }
+                }
 
                 const { data: orgData, error: orgError } = await db
                     .from('organizations')
