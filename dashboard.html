@@ -1118,7 +1118,12 @@ $$ LANGUAGE SQL;
         }
 
         function openModal(modalId) {
-            document.getElementById(modalId).classList.add('active');
+            const modal = document.getElementById(modalId);
+            modal.classList.add('active');
+            // Close on clicking the overlay background
+            modal.onclick = function(e) {
+                if (e.target === modal) closeModal(modalId);
+            };
         }
 
         function closeModal(modalId) {
@@ -1576,8 +1581,9 @@ $$ LANGUAGE SQL;
                     });
                 }
 
-                html += `<div style="margin-top: 24px;">
+                html += `<div style="margin-top: 24px; display: flex; gap: 12px;">
                     <button class="btn btn-primary" onclick="openAddReferenceModal('${candidateId}')">+ Add Reference</button>
+                    <button class="btn btn-ghost" onclick="closeModal('candidate-detail-modal')">Close</button>
                 </div>`;
 
                 document.getElementById('candidate-detail-content').innerHTML = html;
