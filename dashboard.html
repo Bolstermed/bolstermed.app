@@ -1036,6 +1036,10 @@ $$ LANGUAGE SQL;
                     <label for="reference-email">Reference Email</label>
                     <input type="email" id="reference-email" required>
                 </div>
+                <div class="form-group">
+                    <label for="reference-phone">Phone Number <span style="color: var(--text-secondary); font-weight: 400;">(recommended)</span></label>
+                    <input type="tel" id="reference-phone" placeholder="(555) 555-5555">
+                </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-ghost" onclick="closeModal('add-reference-modal')">Cancel</button>
                     <button type="submit" class="btn btn-primary">Send Invitation</button>
@@ -1593,17 +1597,16 @@ $$ LANGUAGE SQL;
             e.preventDefault();
             const refName = document.getElementById('reference-name').value;
             const refEmail = document.getElementById('reference-email').value;
+            const refPhone = document.getElementById('reference-phone').value || null;
             const candidate = state.candidates.find(c => c.id === state.selectedCandidateId);
 
             try {
-                const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-
                 const { error } = await db.from('survey_invitations').insert({
                     candidate_id: state.selectedCandidateId,
                     org_id: state.org.id,
                     reference_name: refName,
                     reference_email: refEmail,
-                    token: token,
+                    reference_phone: refPhone,
                     role_id: candidate.role_id,
                     status: 'pending',
                     expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
