@@ -1606,25 +1606,74 @@ $$ LANGUAGE SQL;
             const refPhone = document.getElementById('reference-phone').value || null;
             const candidate = state.candidates.find(c => c.id === state.selectedCandidateId);
 
+            // Disable button while sending
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Sending...';
+
             try {
-                const { error } = await db.from('survey_invitations').insert({
-                    candidate_id: state.selectedCandidateId,
-                    org_id: state.org.id,
-                    reference_name: refName,
-                    reference_email: refEmail,
-                    reference_phone: refPhone,
-                    role_id: candidate.role_id,
-                    status: 'pending',
-                    expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-                });
+                // Step 1: Create the invitation in the database
+                const { data: invData, error } = await db.from('survey_invitations')
+                    .insert({
+                        candidate_id: state.selectedCandidateId,
+                        org_id: state.org.id,
+                        reference_name: refName,
+                        reference_email: refEmail,
+                        reference_phone: refPhone,
+                        role_id: candidate.role_id,
+                        status: 'pending',
+                        expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+                    })
+                    .select('token')
+                    .single();
                 if (error) throw error;
 
-                showToast('Reference added successfully');
+                const surveyUrl = `https://bolstermed.app/survey/${invData.token}`;
+
+                // Step 2: Send email + SMS via API
+                try {
+                    const sendRes = await fetch('/api/send-invitation', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            referenceName: refName,
+                            referenceEmail: refEmail,
+                            referencePhone: refPhone,
+                            candidateName: `${candidate.first_name} ${candidate.last_name}`,
+                            surveyUrl: surveyUrl,
+                            orgName: state.org.name,
+                        }),
+                    });
+                    const sendData = await sendRes.json();
+
+                    // Update invitation status to reflect sending
+                    await db.from('survey_invitations')
+                        .update({ sent_at: new Date().toISOString() })
+                        .eq('token', invData.token);
+
+                    // Build status message
+                    let statusParts = [];
+                    if (sendData.email && sendData.email.success) statusParts.push('Email sent');
+                    else statusParts.push('Email failed');
+                    if (refPhone) {
+                        if (sendData.sms && sendData.sms.success) statusParts.push('Text sent');
+                        else statusParts.push('Text failed');
+                    }
+                    showToast(`Invitation created. ${statusParts.join(', ')}.`);
+                } catch (sendErr) {
+                    console.error('Send error:', sendErr);
+                    showToast('Reference added but notification delivery failed. You can copy the link manually.', 'error');
+                }
+
                 closeModal('add-reference-modal');
                 await openCandidateDetail(state.selectedCandidateId);
             } catch (err) {
                 console.error('Error adding reference:', err);
                 showToast('Error adding reference', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
             }
         }
 
