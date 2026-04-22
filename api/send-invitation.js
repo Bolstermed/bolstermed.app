@@ -112,7 +112,7 @@ export default async function handler(req, res) {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        from: 'BolsterMed <noreply@bolstermed.app>',
+                        from: process.env.RESEND_FROM_EMAIL || 'BolsterMed <onboarding@resend.dev>',
                         to: [referenceEmail],
                         subject: `Reference Request for ${candidateName} - BolsterMed`,
                         html: emailHtml,
