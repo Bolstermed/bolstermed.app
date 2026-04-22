@@ -404,63 +404,163 @@
             margin-bottom: 20px;
         }
 
-        .attention-items {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
+        .attention-group {
+            margin-bottom: 20px;
         }
 
-        .attention-item {
-            background-color: var(--cream);
-            border: 1px solid var(--cream-dark);
-            border-radius: 8px;
-            padding: 16px;
-            cursor: pointer;
-            transition: all 0.2s;
+        .attention-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .attention-group-header {
             display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            min-height: 120px;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--cream-dark);
         }
 
-        .attention-item:hover {
-            background-color: #f0ebe3;
-            border-color: var(--teal);
-            transform: translateY(-2px);
+        .attention-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
         }
 
-        .attention-item-icon {
-            font-size: 24px;
-            margin-bottom: 8px;
-        }
+        .attention-dot.green { background-color: var(--success); }
+        .attention-dot.red { background-color: var(--danger); }
+        .attention-dot.yellow { background-color: var(--warning); }
+        .attention-dot.blue { background-color: #3498db; }
 
-        .attention-item-label {
+        .attention-group-label {
             font-size: 13px;
-            color: var(--text-secondary);
             font-weight: 600;
+            color: var(--text-secondary);
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            margin-bottom: 4px;
         }
 
-        .attention-item-count {
-            font-size: 24px;
-            font-weight: 700;
-            color: var(--navy);
-            font-family: 'Playfair Display', serif;
-            margin-bottom: 8px;
-        }
-
-        .attention-item-desc {
+        .attention-group-count {
             font-size: 12px;
+            background-color: var(--cream);
             color: var(--text-secondary);
-            flex: 1;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 600;
         }
 
-        .attention-item-arrow {
+        .attention-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 12px;
+            border-radius: 8px;
+            transition: background-color 0.15s;
+            cursor: pointer;
+        }
+
+        .attention-row:hover {
+            background-color: var(--cream);
+        }
+
+        .attention-row-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .attention-row-name {
+            font-weight: 600;
+            color: var(--navy);
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .attention-row-desc {
+            font-size: 13px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .attention-row-cta {
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.15s;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .cta-review {
+            background-color: var(--success);
+            color: white;
+        }
+        .cta-review:hover { background-color: #219a52; }
+
+        .cta-add {
+            background-color: var(--danger);
+            color: white;
+        }
+        .cta-add:hover { background-color: #c0392b; }
+
+        .cta-send {
+            background-color: var(--warning);
+            color: white;
+        }
+        .cta-send:hover { background-color: #d68910; }
+
+        .cta-remind {
+            background-color: #3498db;
+            color: white;
+        }
+        .cta-remind:hover { background-color: #2980b9; }
+
+        .attention-empty {
+            font-size: 13px;
+            color: var(--text-secondary);
+            padding: 8px 12px;
+            font-style: italic;
+        }
+
+        .attention-view-all {
+            display: inline-block;
+            font-size: 12px;
             color: var(--teal);
-            font-size: 18px;
-            margin-top: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 4px;
+            margin-left: 12px;
+        }
+
+        .attention-view-all:hover {
+            text-decoration: underline;
+        }
+
+        /* KPI Cards clickable */
+        .card.clickable-card {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .card.clickable-card:hover {
+            border-color: var(--teal);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .card.highlight-card {
+            border-color: var(--success);
+            background-color: #f8fdf9;
         }
 
         /* Recent Activity Section */
@@ -477,16 +577,22 @@
         }
 
         .activity-item {
-            padding: 12px 0;
+            padding: 12px 8px;
             border-bottom: 1px solid var(--cream-dark);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            border-radius: 6px;
+            transition: background-color 0.15s;
             font-size: 13px;
         }
 
         .activity-item:last-child {
             border-bottom: none;
+        }
+
+        .activity-item.clickable:hover {
+            background-color: var(--cream);
         }
 
         .activity-candidate {
@@ -1178,19 +1284,19 @@ $$ LANGUAGE SQL;
                 <!-- Dashboard View -->
                 <div id="dashboard-view">
                     <div class="cards-grid">
-                        <div class="card">
+                        <div class="card clickable-card" onclick="navigateToAttention(null)">
                             <div class="card-label">Active Candidates</div>
                             <div class="card-value" id="card-active-candidates">-</div>
                         </div>
-                        <div class="card">
+                        <div class="card clickable-card" onclick="navigateToAttention('surveys-in-progress')">
                             <div class="card-label">Pending Surveys</div>
                             <div class="card-value" id="card-pending-surveys">-</div>
                         </div>
-                        <div class="card">
+                        <div class="card clickable-card" onclick="navigateToAttention('ready-for-review')">
                             <div class="card-label">Completed Surveys</div>
                             <div class="card-value" id="card-completed-surveys">-</div>
                         </div>
-                        <div class="card">
+                        <div class="card clickable-card highlight-card" onclick="navigateToAttention('ready-for-review')">
                             <div class="card-label">Ready for Review</div>
                             <div class="card-value" id="card-ready-for-review">-</div>
                         </div>
@@ -1199,43 +1305,8 @@ $$ LANGUAGE SQL;
                     <!-- Attention Needed Section -->
                     <div class="attention-section">
                         <div class="section-title">Attention Needed</div>
-                        <div class="attention-items">
-                            <div class="attention-item" id="attention-missing-refs" onclick="navigateToAttention('missing-references')">
-                                <div>
-                                    <div class="attention-item-icon">📋</div>
-                                    <div class="attention-item-label">Missing References</div>
-                                    <div class="attention-item-count" id="count-missing-refs">0</div>
-                                    <div class="attention-item-desc">Candidates with no survey invitations</div>
-                                </div>
-                                <div class="attention-item-arrow">></div>
-                            </div>
-                            <div class="attention-item" id="attention-not-sent" onclick="navigateToAttention('surveys-not-sent')">
-                                <div>
-                                    <div class="attention-item-icon">✉️</div>
-                                    <div class="attention-item-label">Surveys Not Sent</div>
-                                    <div class="attention-item-count" id="count-not-sent">0</div>
-                                    <div class="attention-item-desc">Invitations with no sent timestamp</div>
-                                </div>
-                                <div class="attention-item-arrow">></div>
-                            </div>
-                            <div class="attention-item" id="attention-in-progress" onclick="navigateToAttention('surveys-in-progress')">
-                                <div>
-                                    <div class="attention-item-icon">⏳</div>
-                                    <div class="attention-item-label">Surveys in Progress</div>
-                                    <div class="attention-item-count" id="count-in-progress">0</div>
-                                    <div class="attention-item-desc">Candidates with pending responses</div>
-                                </div>
-                                <div class="attention-item-arrow">></div>
-                            </div>
-                            <div class="attention-item" id="attention-ready-review" onclick="navigateToAttention('ready-for-review')">
-                                <div>
-                                    <div class="attention-item-icon">✅</div>
-                                    <div class="attention-item-label">Ready for Review</div>
-                                    <div class="attention-item-count" id="count-ready-review">0</div>
-                                    <div class="attention-item-desc">All references completed</div>
-                                </div>
-                                <div class="attention-item-arrow">></div>
-                            </div>
+                        <div id="attention-container">
+                            <div class="loading"><div class="spinner"></div></div>
                         </div>
                     </div>
 
@@ -1703,10 +1774,10 @@ $$ LANGUAGE SQL;
         // ============================================================================
         async function loadDashboard() {
             try {
-                // Load all candidates and invitations for dashboard calculation
+                // Load candidates with names for the attention list
                 const { data: candidates, error: e0 } = await db
                     .from('candidates')
-                    .select('id')
+                    .select('id, first_name, last_name, role_id')
                     .eq('org_id', state.org.id)
                     .eq('status', 'active');
                 if (e0) throw e0;
@@ -1718,56 +1789,148 @@ $$ LANGUAGE SQL;
                 if (e1) throw e1;
 
                 const activeCandidatesCount = candidates?.length || 0;
-
                 const pendingCount = invitations?.filter(i => i.status === 'pending' || i.status === 'opened').length || 0;
                 const completedCount = invitations?.filter(i => i.status === 'completed').length || 0;
 
-                // Calculate ready for review: candidates where all invitations are completed
-                let readyForReviewCount = 0;
+                // Categorize candidates for attention list
+                const readyForReview = [];
+                const missingRefs = [];
+                const notSent = [];
+                const inProgress = [];
+
                 if (candidates && invitations) {
                     candidates.forEach(c => {
                         const candInvs = invitations.filter(i => i.candidate_id === c.id);
-                        if (candInvs.length > 0 && candInvs.every(i => i.status === 'completed')) {
-                            readyForReviewCount++;
-                        }
-                    });
-                }
+                        const name = `${c.first_name} ${c.last_name}`;
+                        const completed = candInvs.filter(i => i.status === 'completed').length;
+                        const total = candInvs.length;
 
-                // Calculate attention items
-                let missingRefsCount = 0;
-                let notSentCount = 0;
-                let inProgressCount = 0;
-
-                const candidateMap = {};
-                if (candidates) {
-                    candidates.forEach(c => {
-                        candidateMap[c.id] = {
-                            invs: invitations?.filter(i => i.candidate_id === c.id) || [],
-                        };
-                    });
-
-                    Object.entries(candidateMap).forEach(([candId, data]) => {
-                        if (data.invs.length === 0) {
-                            missingRefsCount++;
+                        if (candInvs.length === 0) {
+                            missingRefs.push({ id: c.id, name, role: c.role_id });
+                        } else if (candInvs.every(i => i.status === 'completed')) {
+                            readyForReview.push({ id: c.id, name, role: c.role_id, completed, total });
                         } else {
-                            const hasPending = data.invs.some(i => i.status === 'pending' || i.status === 'opened');
-                            const hasNotSent = data.invs.some(i => !i.sent_at);
-
-                            if (hasNotSent) notSentCount++;
-                            if (hasPending) inProgressCount++;
+                            const hasNotSent = candInvs.some(i => !i.sent_at);
+                            const pendingInvs = candInvs.filter(i => i.status === 'pending' || i.status === 'opened').length;
+                            if (hasNotSent) {
+                                notSent.push({ id: c.id, name, role: c.role_id });
+                            }
+                            if (pendingInvs > 0) {
+                                inProgress.push({ id: c.id, name, role: c.role_id, awaiting: total - completed, total });
+                            }
                         }
                     });
                 }
 
+                // Update KPI cards
                 document.getElementById('card-active-candidates').textContent = activeCandidatesCount;
                 document.getElementById('card-pending-surveys').textContent = pendingCount;
                 document.getElementById('card-completed-surveys').textContent = completedCount;
-                document.getElementById('card-ready-for-review').textContent = readyForReviewCount;
+                document.getElementById('card-ready-for-review').textContent = readyForReview.length;
 
-                document.getElementById('count-missing-refs').textContent = missingRefsCount;
-                document.getElementById('count-not-sent').textContent = notSentCount;
-                document.getElementById('count-in-progress').textContent = inProgressCount;
-                document.getElementById('count-ready-review').textContent = readyForReviewCount;
+                // Build Attention Needed action list
+                const container = document.getElementById('attention-container');
+                let html = '';
+
+                const maxShow = 3; // Show up to 3 names per group
+
+                // 1. Ready for Review (GREEN — most important)
+                if (readyForReview.length > 0) {
+                    html += `<div class="attention-group">
+                        <div class="attention-group-header">
+                            <span class="attention-dot green"></span>
+                            <span class="attention-group-label">Ready for Review</span>
+                            <span class="attention-group-count">${readyForReview.length}</span>
+                        </div>`;
+                    readyForReview.slice(0, maxShow).forEach(c => {
+                        html += `<div class="attention-row" onclick="openCandidateDetailView('${c.id}')">
+                            <div class="attention-row-left">
+                                <span class="attention-row-name">${escapeHtml(c.name)}</span>
+                                <span class="attention-row-desc">All ${c.total} references completed</span>
+                            </div>
+                            <button class="attention-row-cta cta-review" onclick="event.stopPropagation(); openCandidateDetailView('${c.id}')">Review</button>
+                        </div>`;
+                    });
+                    if (readyForReview.length > maxShow) {
+                        html += `<span class="attention-view-all" onclick="navigateToAttention('ready-for-review')">View all ${readyForReview.length} →</span>`;
+                    }
+                    html += `</div>`;
+                }
+
+                // 2. Missing References (RED)
+                if (missingRefs.length > 0) {
+                    html += `<div class="attention-group">
+                        <div class="attention-group-header">
+                            <span class="attention-dot red"></span>
+                            <span class="attention-group-label">Missing References</span>
+                            <span class="attention-group-count">${missingRefs.length}</span>
+                        </div>`;
+                    missingRefs.slice(0, maxShow).forEach(c => {
+                        html += `<div class="attention-row" onclick="openCandidateDetailView('${c.id}')">
+                            <div class="attention-row-left">
+                                <span class="attention-row-name">${escapeHtml(c.name)}</span>
+                                <span class="attention-row-desc">No references added yet</span>
+                            </div>
+                            <button class="attention-row-cta cta-add" onclick="event.stopPropagation(); openCandidateDetailView('${c.id}')">Add</button>
+                        </div>`;
+                    });
+                    if (missingRefs.length > maxShow) {
+                        html += `<span class="attention-view-all" onclick="navigateToAttention('missing-references')">View all ${missingRefs.length} →</span>`;
+                    }
+                    html += `</div>`;
+                }
+
+                // 3. Surveys Not Sent (YELLOW)
+                if (notSent.length > 0) {
+                    html += `<div class="attention-group">
+                        <div class="attention-group-header">
+                            <span class="attention-dot yellow"></span>
+                            <span class="attention-group-label">Surveys Not Sent</span>
+                            <span class="attention-group-count">${notSent.length}</span>
+                        </div>`;
+                    notSent.slice(0, maxShow).forEach(c => {
+                        html += `<div class="attention-row" onclick="openCandidateDetailView('${c.id}')">
+                            <div class="attention-row-left">
+                                <span class="attention-row-name">${escapeHtml(c.name)}</span>
+                                <span class="attention-row-desc">Invitations created but not sent</span>
+                            </div>
+                            <button class="attention-row-cta cta-send" onclick="event.stopPropagation(); openCandidateDetailView('${c.id}')">Send</button>
+                        </div>`;
+                    });
+                    if (notSent.length > maxShow) {
+                        html += `<span class="attention-view-all" onclick="navigateToAttention('surveys-not-sent')">View all ${notSent.length} →</span>`;
+                    }
+                    html += `</div>`;
+                }
+
+                // 4. Surveys In Progress (BLUE)
+                if (inProgress.length > 0) {
+                    html += `<div class="attention-group">
+                        <div class="attention-group-header">
+                            <span class="attention-dot blue"></span>
+                            <span class="attention-group-label">Awaiting Responses</span>
+                            <span class="attention-group-count">${inProgress.length}</span>
+                        </div>`;
+                    inProgress.slice(0, maxShow).forEach(c => {
+                        html += `<div class="attention-row" onclick="openCandidateDetailView('${c.id}')">
+                            <div class="attention-row-left">
+                                <span class="attention-row-name">${escapeHtml(c.name)}</span>
+                                <span class="attention-row-desc">Awaiting ${c.awaiting} of ${c.total} responses</span>
+                            </div>
+                            <button class="attention-row-cta cta-remind" onclick="event.stopPropagation(); openCandidateDetailView('${c.id}')">View</button>
+                        </div>`;
+                    });
+                    if (inProgress.length > maxShow) {
+                        html += `<span class="attention-view-all" onclick="navigateToAttention('surveys-in-progress')">View all ${inProgress.length} →</span>`;
+                    }
+                    html += `</div>`;
+                }
+
+                if (!html) {
+                    html = '<div class="attention-empty">Nothing needs your attention right now. Add candidates to get started.</div>';
+                }
+
+                container.innerHTML = html;
 
                 // Recent activity
                 const { data: recentResponses, error: e5 } = await db
@@ -1776,6 +1939,7 @@ $$ LANGUAGE SQL;
                         id,
                         composite_score,
                         submitted_at,
+                        candidate_id,
                         candidates (first_name, last_name),
                         survey_invitations (reference_name, role_id)
                     `)
@@ -1789,10 +1953,10 @@ $$ LANGUAGE SQL;
                     activityList.innerHTML = '<li class="activity-item text-secondary">No activity yet</li>';
                 } else {
                     activityList.innerHTML = recentResponses.map(r => `
-                        <li class="activity-item">
+                        <li class="activity-item clickable" onclick="openCandidateDetailView('${r.candidate_id}')">
                             <div>
                                 <span class="activity-candidate">${escapeHtml(r.candidates.first_name)} ${escapeHtml(r.candidates.last_name)}</span>
-                                <span class="activity-reference"> • ${escapeHtml(r.survey_invitations.reference_name)}</span>
+                                <span class="activity-reference"> • ${escapeHtml(r.survey_invitations.reference_name)} completed survey</span>
                             </div>
                             <span class="activity-time">${formatRelativeTime(r.submitted_at)}</span>
                         </li>
@@ -1955,11 +2119,38 @@ $$ LANGUAGE SQL;
 
         async function openCandidateDetailView(candidateId) {
             state.selectedCandidateId = candidateId;
+
+            // Hide all views and show candidate detail
+            document.getElementById('dashboard-view').classList.add('hidden');
             document.getElementById('candidates-view').classList.add('hidden');
+            document.getElementById('results-view').classList.add('hidden');
             document.getElementById('candidate-detail-view').classList.remove('hidden');
 
+            // Highlight Candidates in sidebar
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.toggle('active', item.dataset.view === 'candidates');
+            });
+            document.getElementById('page-title').textContent = 'Candidate Detail';
+
             try {
-                const candidate = state.candidates.find(c => c.id === candidateId);
+                // Try to find in loaded state first, otherwise fetch
+                let candidate = state.candidates.find(c => c.id === candidateId);
+                if (!candidate) {
+                    const { data: fetchedCandidate, error: fetchErr } = await db
+                        .from('candidates')
+                        .select('*')
+                        .eq('id', candidateId)
+                        .single();
+                    if (fetchErr) throw fetchErr;
+                    candidate = fetchedCandidate;
+                    // Also load invitations if not loaded
+                    if (!state.invitations.length) {
+                        const { data: invs } = await db.from('survey_invitations')
+                            .select('candidate_id, status, sent_at')
+                            .eq('org_id', state.org.id);
+                        state.invitations = invs || [];
+                    }
+                }
                 if (!candidate) return;
 
                 document.getElementById('detail-candidate-name').textContent = `${candidate.first_name} ${candidate.last_name}`;
