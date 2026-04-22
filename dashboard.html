@@ -405,7 +405,7 @@
         }
 
         .attention-group {
-            margin-bottom: 28px;
+            margin-bottom: 32px;
         }
 
         .attention-group:last-child {
@@ -424,7 +424,7 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            margin-bottom: 10px;
+            margin-bottom: 6px;
             padding-bottom: 8px;
             border-bottom: 1px solid var(--cream-dark);
         }
@@ -462,14 +462,15 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 10px 12px;
+            padding: 9px 12px;
             border-radius: 8px;
-            transition: background-color 0.15s;
+            transition: all 0.15s;
             cursor: pointer;
         }
 
         .attention-row:hover {
             background-color: var(--cream);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
         }
 
         .attention-row-left {
@@ -498,7 +499,7 @@
         }
 
         .attention-row-cta {
-            padding: 6px 14px;
+            padding: 6px 16px;
             border-radius: 6px;
             font-size: 12px;
             font-weight: 600;
@@ -507,6 +508,11 @@
             transition: all 0.15s;
             white-space: nowrap;
             flex-shrink: 0;
+        }
+
+        .attention-row-cta:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
         }
 
         .cta-review {
@@ -583,6 +589,21 @@
         }
 
         .attention-view-all:hover {
+            text-decoration: underline;
+        }
+
+        .attention-header-viewall {
+            font-size: 12px;
+            color: var(--teal);
+            font-weight: 600;
+            cursor: pointer;
+            margin-left: auto;
+            font-family: 'DM Sans', sans-serif;
+            text-transform: none;
+            letter-spacing: 0;
+        }
+
+        .attention-header-viewall:hover {
             text-decoration: underline;
         }
 
@@ -1845,9 +1866,9 @@ $$ LANGUAGE SQL;
                 }
 
                 function urgencyLabel(days) {
-                    if (days >= 7) return { text: `${days}d ago`, cls: 'urgent' };
+                    if (days >= 5) return { text: `${days}d ago`, cls: 'urgent' };
                     if (days >= 3) return { text: `${days}d ago`, cls: 'moderate' };
-                    if (days >= 1) return { text: `${days}d ago`, cls: '' };
+                    if (days >= 1) return { text: `${days}d`, cls: '' };
                     return { text: 'Today', cls: '' };
                 }
 
@@ -1874,9 +1895,10 @@ $$ LANGUAGE SQL;
                                     .filter(i => i.sent_at)
                                     .sort((a, b) => new Date(a.sent_at) - new Date(b.sent_at))[0];
                                 const days = oldestSent ? daysSince(oldestSent.sent_at) : daysSince(pendingInvs[0].created_at);
+                                const waiting = total - completed;
                                 inProgress.push({
                                     id: c.id, name, role: c.role_id,
-                                    awaiting: total - completed, total,
+                                    waiting, completed, total,
                                     days, urgency: urgencyLabel(days)
                                 });
                             }
@@ -1906,21 +1928,19 @@ $$ LANGUAGE SQL;
                             <span class="attention-group-label">Ready for Review</span>
                             <span class="attention-group-count">${readyForReview.length}</span>
                             <span class="ready-now-label">Ready Now</span>
+                            ${readyForReview.length > maxShow ? `<span class="attention-header-viewall" onclick="navigateToAttention('ready-for-review')">View All</span>` : ''}
                         </div>`;
                     readyForReview.slice(0, maxShow).forEach(c => {
                         html += `<div class="attention-row" onclick="openCandidateDetailView('${c.id}')">
                             <div class="attention-row-left">
                                 <span class="attention-row-name">${escapeHtml(c.name)}</span>
-                                <span class="attention-row-desc">All ${c.total} references completed</span>
+                                <span class="attention-row-desc">${c.total} of ${c.total} references responded</span>
                             </div>
                             <div class="attention-row-actions">
                                 <button class="attention-row-cta cta-review" onclick="event.stopPropagation(); openCandidateDetailView('${c.id}')">Review</button>
                             </div>
                         </div>`;
                     });
-                    if (readyForReview.length > maxShow) {
-                        html += `<span class="attention-view-all" onclick="navigateToAttention('ready-for-review')">View all ${readyForReview.length} →</span>`;
-                    }
                     html += `</div>`;
                 }
 
@@ -1931,6 +1951,7 @@ $$ LANGUAGE SQL;
                             <span class="attention-dot red"></span>
                             <span class="attention-group-label">Missing References</span>
                             <span class="attention-group-count">${missingRefs.length}</span>
+                            ${missingRefs.length > maxShow ? `<span class="attention-header-viewall" onclick="navigateToAttention('missing-references')">View All</span>` : ''}
                         </div>`;
                     missingRefs.slice(0, maxShow).forEach(c => {
                         html += `<div class="attention-row" onclick="openCandidateDetailView('${c.id}')">
@@ -1943,9 +1964,6 @@ $$ LANGUAGE SQL;
                             </div>
                         </div>`;
                     });
-                    if (missingRefs.length > maxShow) {
-                        html += `<span class="attention-view-all" onclick="navigateToAttention('missing-references')">View all ${missingRefs.length} →</span>`;
-                    }
                     html += `</div>`;
                 }
 
@@ -1956,6 +1974,7 @@ $$ LANGUAGE SQL;
                             <span class="attention-dot yellow"></span>
                             <span class="attention-group-label">Surveys Not Sent</span>
                             <span class="attention-group-count">${notSent.length}</span>
+                            ${notSent.length > maxShow ? `<span class="attention-header-viewall" onclick="navigateToAttention('surveys-not-sent')">View All</span>` : ''}
                         </div>`;
                     notSent.slice(0, maxShow).forEach(c => {
                         html += `<div class="attention-row" onclick="openCandidateDetailView('${c.id}')">
@@ -1968,9 +1987,6 @@ $$ LANGUAGE SQL;
                             </div>
                         </div>`;
                     });
-                    if (notSent.length > maxShow) {
-                        html += `<span class="attention-view-all" onclick="navigateToAttention('surveys-not-sent')">View all ${notSent.length} →</span>`;
-                    }
                     html += `</div>`;
                 }
 
@@ -1981,22 +1997,21 @@ $$ LANGUAGE SQL;
                             <span class="attention-dot blue"></span>
                             <span class="attention-group-label">Awaiting Responses</span>
                             <span class="attention-group-count">${inProgress.length}</span>
+                            ${inProgress.length > maxShow ? `<span class="attention-header-viewall" onclick="navigateToAttention('surveys-in-progress')">View All</span>` : ''}
                         </div>`;
                     inProgress.slice(0, maxShow).forEach(c => {
                         const timeHtml = c.urgency ? `<span class="attention-row-time ${c.urgency.cls}">${c.urgency.text}</span>` : '';
+                        const waitText = c.waiting === 1 ? 'Waiting on 1 reference' : `Waiting on ${c.waiting} references`;
                         html += `<div class="attention-row" onclick="openCandidateDetailView('${c.id}')">
                             <div class="attention-row-left">
                                 <span class="attention-row-name">${escapeHtml(c.name)}</span>
-                                <span class="attention-row-desc">Awaiting ${c.awaiting} of ${c.total} responses ${timeHtml}</span>
+                                <span class="attention-row-desc">${waitText} ${timeHtml}</span>
                             </div>
                             <div class="attention-row-actions">
                                 <button class="attention-row-cta cta-remind" onclick="event.stopPropagation(); openCandidateDetailView('${c.id}')">Remind</button>
                             </div>
                         </div>`;
                     });
-                    if (inProgress.length > maxShow) {
-                        html += `<span class="attention-view-all" onclick="navigateToAttention('surveys-in-progress')">View all ${inProgress.length} →</span>`;
-                    }
                     html += `</div>`;
                 }
 
