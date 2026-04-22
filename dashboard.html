@@ -405,11 +405,19 @@
         }
 
         .attention-group {
-            margin-bottom: 20px;
+            margin-bottom: 28px;
         }
 
         .attention-group:last-child {
             margin-bottom: 0;
+        }
+
+        .attention-group.group-ready {
+            background-color: #f4fdf8;
+            border: 1px solid #c8edd8;
+            border-radius: 10px;
+            padding: 16px;
+            box-shadow: 0 2px 6px rgba(39, 174, 96, 0.08);
         }
 
         .attention-group-header {
@@ -524,6 +532,38 @@
             color: white;
         }
         .cta-remind:hover { background-color: #2980b9; }
+
+        .attention-row-actions {
+            display: flex;
+            gap: 6px;
+            flex-shrink: 0;
+            align-items: center;
+        }
+
+        .attention-row-time {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-left: 4px;
+            white-space: nowrap;
+        }
+
+        .attention-row-time.urgent {
+            color: var(--danger);
+            font-weight: 600;
+        }
+
+        .attention-row-time.moderate {
+            color: var(--warning);
+        }
+
+        .ready-now-label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--success);
+            margin-left: auto;
+        }
 
         .attention-empty {
             font-size: 13px;
@@ -1784,7 +1824,7 @@ $$ LANGUAGE SQL;
 
                 const { data: invitations, error: e1 } = await db
                     .from('survey_invitations')
-                    .select('candidate_id, status, sent_at')
+                    .select('candidate_id, status, sent_at, created_at')
                     .eq('org_id', state.org.id);
                 if (e1) throw e1;
 
@@ -1797,6 +1837,19 @@ $$ LANGUAGE SQL;
                 const missingRefs = [];
                 const notSent = [];
                 const inProgress = [];
+
+                // Helper: days since a date
+                function daysSince(dateStr) {
+                    if (!dateStr) return 0;
+                    return Math.floor((Date.now() - new Date(dateStr).getTime()) / (1000 * 60 * 60 * 24));
+                }
+
+                function urgencyLabel(days) {
+                    if (days >= 7) return { text: `${days}d ago`, cls: 'urgent' };
+                    if (days >= 3) return { text: `${days}d ago`, cls: 'moderate' };
+                    if (days >= 1) return { text: `${days}d ago`, cls: '' };
+                    return { text: 'Today', cls: '' };
+                }
 
                 if (candidates && invitations) {
                     candidates.forEach(c => {
@@ -1811,15 +1864,26 @@ $$ LANGUAGE SQL;
                             readyForReview.push({ id: c.id, name, role: c.role_id, completed, total });
                         } else {
                             const hasNotSent = candInvs.some(i => !i.sent_at);
-                            const pendingInvs = candInvs.filter(i => i.status === 'pending' || i.status === 'opened').length;
+                            const pendingInvs = candInvs.filter(i => i.status === 'pending' || i.status === 'opened');
                             if (hasNotSent) {
                                 notSent.push({ id: c.id, name, role: c.role_id });
                             }
-                            if (pendingInvs > 0) {
-                                inProgress.push({ id: c.id, name, role: c.role_id, awaiting: total - completed, total });
+                            if (pendingInvs.length > 0) {
+                                // Find oldest pending invitation for urgency
+                                const oldestSent = pendingInvs
+                                    .filter(i => i.sent_at)
+                                    .sort((a, b) => new Date(a.sent_at) - new Date(b.sent_at))[0];
+                                const days = oldestSent ? daysSince(oldestSent.sent_at) : daysSince(pendingInvs[0].created_at);
+                                inProgress.push({
+                                    id: c.id, name, role: c.role_id,
+                                    awaiting: total - completed, total,
+                                    days, urgency: urgencyLabel(days)
+                                });
                             }
                         }
                     });
+                    // Sort in-progress by urgency (oldest first)
+                    inProgress.sort((a, b) => b.days - a.days);
                 }
 
                 // Update KPI cards
@@ -1834,13 +1898,14 @@ $$ LANGUAGE SQL;
 
                 const maxShow = 3; // Show up to 3 names per group
 
-                // 1. Ready for Review (GREEN — most important)
+                // 1. Ready for Review (GREEN — most important, elevated)
                 if (readyForReview.length > 0) {
-                    html += `<div class="attention-group">
+                    html += `<div class="attention-group group-ready">
                         <div class="attention-group-header">
                             <span class="attention-dot green"></span>
                             <span class="attention-group-label">Ready for Review</span>
                             <span class="attention-group-count">${readyForReview.length}</span>
+                            <span class="ready-now-label">Ready Now</span>
                         </div>`;
                     readyForReview.slice(0, maxShow).forEach(c => {
                         html += `<div class="attention-row" onclick="openCandidateDetailView('${c.id}')">
@@ -1848,7 +1913,9 @@ $$ LANGUAGE SQL;
                                 <span class="attention-row-name">${escapeHtml(c.name)}</span>
                                 <span class="attention-row-desc">All ${c.total} references completed</span>
                             </div>
-                            <button class="attention-row-cta cta-review" onclick="event.stopPropagation(); openCandidateDetailView('${c.id}')">Review</button>
+                            <div class="attention-row-actions">
+                                <button class="attention-row-cta cta-review" onclick="event.stopPropagation(); openCandidateDetailView('${c.id}')">Review</button>
+                            </div>
                         </div>`;
                     });
                     if (readyForReview.length > maxShow) {
@@ -1871,7 +1938,9 @@ $$ LANGUAGE SQL;
                                 <span class="attention-row-name">${escapeHtml(c.name)}</span>
                                 <span class="attention-row-desc">No references added yet</span>
                             </div>
-                            <button class="attention-row-cta cta-add" onclick="event.stopPropagation(); openCandidateDetailView('${c.id}')">Add</button>
+                            <div class="attention-row-actions">
+                                <button class="attention-row-cta cta-add" onclick="event.stopPropagation(); openCandidateDetailView('${c.id}')">Add</button>
+                            </div>
                         </div>`;
                     });
                     if (missingRefs.length > maxShow) {
@@ -1894,7 +1963,9 @@ $$ LANGUAGE SQL;
                                 <span class="attention-row-name">${escapeHtml(c.name)}</span>
                                 <span class="attention-row-desc">Invitations created but not sent</span>
                             </div>
-                            <button class="attention-row-cta cta-send" onclick="event.stopPropagation(); openCandidateDetailView('${c.id}')">Send</button>
+                            <div class="attention-row-actions">
+                                <button class="attention-row-cta cta-send" onclick="event.stopPropagation(); openCandidateDetailView('${c.id}')">Send</button>
+                            </div>
                         </div>`;
                     });
                     if (notSent.length > maxShow) {
@@ -1903,7 +1974,7 @@ $$ LANGUAGE SQL;
                     html += `</div>`;
                 }
 
-                // 4. Surveys In Progress (BLUE)
+                // 4. Awaiting Responses (BLUE — with urgency + Remind action)
                 if (inProgress.length > 0) {
                     html += `<div class="attention-group">
                         <div class="attention-group-header">
@@ -1912,12 +1983,15 @@ $$ LANGUAGE SQL;
                             <span class="attention-group-count">${inProgress.length}</span>
                         </div>`;
                     inProgress.slice(0, maxShow).forEach(c => {
+                        const timeHtml = c.urgency ? `<span class="attention-row-time ${c.urgency.cls}">${c.urgency.text}</span>` : '';
                         html += `<div class="attention-row" onclick="openCandidateDetailView('${c.id}')">
                             <div class="attention-row-left">
                                 <span class="attention-row-name">${escapeHtml(c.name)}</span>
-                                <span class="attention-row-desc">Awaiting ${c.awaiting} of ${c.total} responses</span>
+                                <span class="attention-row-desc">Awaiting ${c.awaiting} of ${c.total} responses ${timeHtml}</span>
                             </div>
-                            <button class="attention-row-cta cta-remind" onclick="event.stopPropagation(); openCandidateDetailView('${c.id}')">View</button>
+                            <div class="attention-row-actions">
+                                <button class="attention-row-cta cta-remind" onclick="event.stopPropagation(); openCandidateDetailView('${c.id}')">Remind</button>
+                            </div>
                         </div>`;
                     });
                     if (inProgress.length > maxShow) {
