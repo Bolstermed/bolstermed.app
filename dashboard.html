@@ -387,6 +387,122 @@
             margin-top: 8px;
         }
 
+        /* Attention Needed Section */
+        .attention-section {
+            background-color: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--cream-dark);
+            margin-bottom: 32px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--navy);
+            margin-bottom: 20px;
+        }
+
+        .attention-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .attention-item {
+            background-color: var(--cream);
+            border: 1px solid var(--cream-dark);
+            border-radius: 8px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 120px;
+        }
+
+        .attention-item:hover {
+            background-color: #f0ebe3;
+            border-color: var(--teal);
+            transform: translateY(-2px);
+        }
+
+        .attention-item-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .attention-item-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .attention-item-count {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--navy);
+            font-family: 'Playfair Display', serif;
+            margin-bottom: 8px;
+        }
+
+        .attention-item-desc {
+            font-size: 12px;
+            color: var(--text-secondary);
+            flex: 1;
+        }
+
+        .attention-item-arrow {
+            color: var(--teal);
+            font-size: 18px;
+            margin-top: 8px;
+        }
+
+        /* Recent Activity Section */
+        .recent-activity-section {
+            background-color: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--cream-dark);
+        }
+
+        .activity-list {
+            list-style: none;
+        }
+
+        .activity-item {
+            padding: 12px 0;
+            border-bottom: 1px solid var(--cream-dark);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-candidate {
+            font-weight: 600;
+            color: var(--navy);
+        }
+
+        .activity-reference {
+            color: var(--text-secondary);
+        }
+
+        .activity-time {
+            color: var(--text-secondary);
+            font-size: 12px;
+        }
+
         /* Tables */
         .table-section {
             background-color: white;
@@ -408,6 +524,21 @@
             font-size: 18px;
             font-weight: 600;
             color: var(--navy);
+        }
+
+        .search-box {
+            padding: 10px 14px;
+            border: 1px solid var(--cream-dark);
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: 'DM Sans', sans-serif;
+            width: 250px;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: var(--teal);
+            box-shadow: 0 0 0 3px rgba(45, 184, 154, 0.1);
         }
 
         table {
@@ -501,6 +632,177 @@
             border-radius: 50%;
             background-color: var(--danger);
             margin-right: 4px;
+        }
+
+        /* Candidate Detail View */
+        .detail-header {
+            background-color: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--cream-dark);
+        }
+
+        .detail-back {
+            color: var(--teal);
+            cursor: pointer;
+            font-weight: 600;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+
+        .detail-back:hover {
+            text-decoration: underline;
+        }
+
+        .detail-name {
+            font-size: 28px;
+            color: var(--navy);
+            margin-bottom: 8px;
+        }
+
+        .detail-meta {
+            display: flex;
+            gap: 20px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .detail-section {
+            background-color: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--cream-dark);
+        }
+
+        .detail-section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--navy);
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .reference-card {
+            background-color: var(--cream);
+            border: 1px solid var(--cream-dark);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+        }
+
+        .reference-info {
+            flex: 1;
+        }
+
+        .reference-name {
+            font-weight: 600;
+            color: var(--navy);
+            margin-bottom: 4px;
+        }
+
+        .reference-email {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .reference-phone {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .reference-dates {
+            font-size: 12px;
+            color: var(--text-secondary);
+            display: flex;
+            gap: 12px;
+        }
+
+        .reference-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .reference-status-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .ai-summary-placeholder {
+            background-color: #f5f9f7;
+            border: 1px dashed var(--teal);
+            border-radius: 8px;
+            padding: 24px;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        .ai-summary-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+        }
+
+        .response-item {
+            background-color: var(--cream);
+            border: 1px solid var(--cream-dark);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .response-item:hover {
+            background-color: #f0ebe3;
+        }
+
+        .response-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .response-name {
+            font-weight: 600;
+            color: var(--navy);
+        }
+
+        .response-score {
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .response-date {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .response-content {
+            background-color: white;
+            padding: 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .response-content.hidden {
+            display: none;
         }
 
         /* Modals */
@@ -666,6 +968,14 @@
 
             td, th {
                 padding: 12px 8px;
+            }
+
+            .attention-items {
+                grid-template-columns: 1fr;
+            }
+
+            .search-box {
+                width: 100%;
             }
         }
 
@@ -881,38 +1191,67 @@ $$ LANGUAGE SQL;
                             <div class="card-value" id="card-completed-surveys">-</div>
                         </div>
                         <div class="card">
-                            <div class="card-label">Avg Score</div>
-                            <div class="card-value" id="card-avg-score">-</div>
+                            <div class="card-label">Ready for Review</div>
+                            <div class="card-value" id="card-ready-for-review">-</div>
                         </div>
                     </div>
 
-                    <div class="table-section">
-                        <div class="table-header">
-                            <h2 class="table-title">Recent Activity</h2>
+                    <!-- Attention Needed Section -->
+                    <div class="attention-section">
+                        <div class="section-title">Attention Needed</div>
+                        <div class="attention-items">
+                            <div class="attention-item" id="attention-missing-refs" onclick="navigateToAttention('missing-references')">
+                                <div>
+                                    <div class="attention-item-icon">📋</div>
+                                    <div class="attention-item-label">Missing References</div>
+                                    <div class="attention-item-count" id="count-missing-refs">0</div>
+                                    <div class="attention-item-desc">Candidates with no survey invitations</div>
+                                </div>
+                                <div class="attention-item-arrow">></div>
+                            </div>
+                            <div class="attention-item" id="attention-not-sent" onclick="navigateToAttention('surveys-not-sent')">
+                                <div>
+                                    <div class="attention-item-icon">✉️</div>
+                                    <div class="attention-item-label">Surveys Not Sent</div>
+                                    <div class="attention-item-count" id="count-not-sent">0</div>
+                                    <div class="attention-item-desc">Invitations with no sent timestamp</div>
+                                </div>
+                                <div class="attention-item-arrow">></div>
+                            </div>
+                            <div class="attention-item" id="attention-in-progress" onclick="navigateToAttention('surveys-in-progress')">
+                                <div>
+                                    <div class="attention-item-icon">⏳</div>
+                                    <div class="attention-item-label">Surveys in Progress</div>
+                                    <div class="attention-item-count" id="count-in-progress">0</div>
+                                    <div class="attention-item-desc">Candidates with pending responses</div>
+                                </div>
+                                <div class="attention-item-arrow">></div>
+                            </div>
+                            <div class="attention-item" id="attention-ready-review" onclick="navigateToAttention('ready-for-review')">
+                                <div>
+                                    <div class="attention-item-icon">✅</div>
+                                    <div class="attention-item-label">Ready for Review</div>
+                                    <div class="attention-item-count" id="count-ready-review">0</div>
+                                    <div class="attention-item-desc">All references completed</div>
+                                </div>
+                                <div class="attention-item-arrow">></div>
+                            </div>
                         </div>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Candidate</th>
-                                    <th>Reference</th>
-                                    <th>Role</th>
-                                    <th>Score</th>
-                                    <th>Date</th>
-                                </tr>
-                            </thead>
-                            <tbody id="recent-activity-tbody">
-                                <tr>
-                                    <td colspan="5" class="text-center text-secondary">Loading...</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    </div>
+
+                    <!-- Recent Activity Section -->
+                    <div class="recent-activity-section">
+                        <div class="section-title">Recent Activity</div>
+                        <ul class="activity-list" id="activity-list">
+                            <li class="activity-item text-secondary">Loading...</li>
+                        </ul>
                     </div>
                 </div>
 
                 <!-- Candidates View -->
                 <div id="candidates-view" class="hidden">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                        <h2 style="font-size: 20px; color: var(--navy);">All Candidates</h2>
+                        <input type="text" id="candidates-search" class="search-box" placeholder="Search by name...">
                         <button id="add-candidate-btn" class="btn btn-primary">+ Add Candidate</button>
                     </div>
 
@@ -924,8 +1263,8 @@ $$ LANGUAGE SQL;
                                     <th>Role</th>
                                     <th>Department</th>
                                     <th>Status</th>
-                                    <th>References</th>
-                                    <th>Completed</th>
+                                    <th>Progress</th>
+                                    <th>Updated</th>
                                     <th></th>
                                 </tr>
                             </thead>
@@ -938,9 +1277,55 @@ $$ LANGUAGE SQL;
                     </div>
                 </div>
 
+                <!-- Candidate Detail View -->
+                <div id="candidate-detail-view" class="hidden">
+                    <div class="detail-back" onclick="backToCandidates()">← Back to Candidates</div>
+                    <div class="detail-header">
+                        <div class="detail-name" id="detail-candidate-name">Candidate Name</div>
+                        <div class="detail-meta">
+                            <span id="detail-candidate-role">Role: -</span>
+                            <span id="detail-candidate-dept">Dept: -</span>
+                            <span id="detail-candidate-status">Status: -</span>
+                            <span id="detail-candidate-progress">Progress: -</span>
+                        </div>
+                    </div>
+
+                    <!-- References Section -->
+                    <div class="detail-section">
+                        <div class="detail-section-title">
+                            <span>References <span id="detail-ref-count">(0)</span></span>
+                            <button class="btn btn-primary btn-small" onclick="openAddReferenceModalFromDetail()">+ Add Reference</button>
+                        </div>
+                        <div id="references-list"></div>
+                    </div>
+
+                    <!-- Survey Progress Section -->
+                    <div class="detail-section">
+                        <div class="detail-section-title">Survey Progress</div>
+                        <div id="survey-progress-content"></div>
+                    </div>
+
+                    <!-- AI Summary Section -->
+                    <div class="detail-section">
+                        <div class="detail-section-title">AI Summary</div>
+                        <div class="ai-summary-placeholder">
+                            <div class="ai-summary-icon">🤖</div>
+                            <p>AI Summary will appear here once enough references have responded.</p>
+                        </div>
+                    </div>
+
+                    <!-- Raw Results Section -->
+                    <div class="detail-section">
+                        <div class="detail-section-title">Completed Responses</div>
+                        <div id="raw-results-content"></div>
+                    </div>
+                </div>
+
                 <!-- Results View -->
                 <div id="results-view" class="hidden">
-                    <h2 style="font-size: 20px; color: var(--navy); margin-bottom: 20px;">Survey Results</h2>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <input type="text" id="results-search" class="search-box" placeholder="Search by candidate or reference...">
+                    </div>
 
                     <div class="table-section">
                         <table>
@@ -1007,19 +1392,6 @@ $$ LANGUAGE SQL;
         </div>
     </div>
 
-    <!-- Candidate Detail Modal -->
-    <div id="candidate-detail-modal" class="modal-overlay">
-        <div class="modal modal-large">
-            <button class="modal-close" onclick="closeModal('candidate-detail-modal')">&times;</button>
-            <div class="modal-header">
-                <h2 class="modal-title" id="detail-candidate-name">Candidate Details</h2>
-            </div>
-            <div id="candidate-detail-content">
-                <div class="loading"><div class="spinner"></div></div>
-            </div>
-        </div>
-    </div>
-
     <!-- Add Reference Modal -->
     <div id="add-reference-modal" class="modal-overlay">
         <div class="modal">
@@ -1066,19 +1438,6 @@ $$ LANGUAGE SQL;
         </div>
     </div>
 
-    <!-- Response Detail Modal -->
-    <div id="response-detail-modal" class="modal-overlay">
-        <div class="modal modal-large">
-            <button class="modal-close" onclick="closeModal('response-detail-modal')">&times;</button>
-            <div class="modal-header">
-                <h2 class="modal-title">Response Details</h2>
-            </div>
-            <div id="response-detail-content">
-                <div class="loading"><div class="spinner"></div></div>
-            </div>
-        </div>
-    </div>
-
     <!-- Toast Container -->
     <div class="toast-container" id="toast-container"></div>
 
@@ -1104,6 +1463,8 @@ $$ LANGUAGE SQL;
             responses: [],
             surveyConfigs: [],
             selectedCandidateId: null,
+            filteredCandidates: [],
+            filteredResponses: [],
         };
 
         // ============================================================================
@@ -1120,7 +1481,6 @@ $$ LANGUAGE SQL;
         function openModal(modalId) {
             const modal = document.getElementById(modalId);
             modal.classList.add('active');
-            // Close on clicking the overlay background
             modal.onclick = function(e) {
                 if (e.target === modal) closeModal(modalId);
             };
@@ -1140,6 +1500,19 @@ $$ LANGUAGE SQL;
             if (!dateStr) return '-';
             const date = new Date(dateStr);
             return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+
+        function formatRelativeTime(dateStr) {
+            if (!dateStr) return '-';
+            const date = new Date(dateStr);
+            const now = new Date();
+            const seconds = Math.floor((now - date) / 1000);
+
+            if (seconds < 60) return 'just now';
+            if (seconds < 3600) return Math.floor(seconds / 60) + 'm ago';
+            if (seconds < 86400) return Math.floor(seconds / 3600) + 'h ago';
+            if (seconds < 604800) return Math.floor(seconds / 86400) + 'd ago';
+            return formatDate(dateStr);
         }
 
         function formatScore(score) {
@@ -1189,7 +1562,6 @@ $$ LANGUAGE SQL;
                 document.getElementById('signup-error').classList.add('hidden');
                 document.getElementById('signup-success').classList.add('hidden');
 
-                // Create auth user
                 const { data: authData, error: authError } = await db.auth.signUp({
                     email,
                     password,
@@ -1199,11 +1571,9 @@ $$ LANGUAGE SQL;
                 });
                 if (authError) throw authError;
 
-                // Store org info for after email confirmation
                 localStorage.setItem('bolstermed_pending_org', org);
                 localStorage.setItem('bolstermed_pending_name', fullName);
 
-                // Show confirmation message immediately
                 document.getElementById('signup-form').reset();
                 document.getElementById('signup-form').style.display = 'none';
                 document.getElementById('signup-success').innerHTML = '<strong style="font-size:18px;">Check your email!</strong><br><br>We sent a confirmation link to <strong>' + email + '</strong>. Click the link in the email, then come back here and sign in.';
@@ -1238,7 +1608,6 @@ $$ LANGUAGE SQL;
                     .single();
 
                 if (userError || !userData) {
-                    // User record doesn't exist yet — create org and user via RPC
                     const pendingOrg = localStorage.getItem('bolstermed_pending_org');
                     const pendingName = localStorage.getItem('bolstermed_pending_name');
 
@@ -1252,7 +1621,6 @@ $$ LANGUAGE SQL;
                         localStorage.removeItem('bolstermed_pending_org');
                         localStorage.removeItem('bolstermed_pending_name');
 
-                        // Now load the newly created user/org
                         return await loadUserOrg();
                     } else {
                         throw new Error('User not found in system. Please sign up first.');
@@ -1302,12 +1670,10 @@ $$ LANGUAGE SQL;
         function switchView(view) {
             state.currentView = view;
 
-            // Update nav
             document.querySelectorAll('.nav-item').forEach(item => {
                 item.classList.toggle('active', item.dataset.view === view);
             });
 
-            // Update page title
             const titles = {
                 dashboard: 'Dashboard',
                 candidates: 'Candidates',
@@ -1315,15 +1681,21 @@ $$ LANGUAGE SQL;
             };
             document.getElementById('page-title').textContent = titles[view];
 
-            // Show/hide views
             document.getElementById('dashboard-view').classList.toggle('hidden', view !== 'dashboard');
             document.getElementById('candidates-view').classList.toggle('hidden', view !== 'candidates');
+            document.getElementById('candidate-detail-view').classList.toggle('hidden', true);
             document.getElementById('results-view').classList.toggle('hidden', view !== 'results');
 
-            // Load data
             if (view === 'dashboard') loadDashboard();
             if (view === 'candidates') loadCandidates();
             if (view === 'results') loadResults();
+        }
+
+        function backToCandidates() {
+            document.getElementById('candidate-detail-view').classList.add('hidden');
+            document.getElementById('candidates-view').classList.remove('hidden');
+            state.currentView = 'candidates';
+            document.querySelector('[data-view="candidates"]').classList.add('active');
         }
 
         // ============================================================================
@@ -1331,41 +1703,71 @@ $$ LANGUAGE SQL;
         // ============================================================================
         async function loadDashboard() {
             try {
-                // Active candidates
-                const { data: activeCandidates, error: e1 } = await db
+                // Load all candidates and invitations for dashboard calculation
+                const { data: candidates, error: e0 } = await db
                     .from('candidates')
-                    .select('id', { count: 'exact' })
+                    .select('id')
                     .eq('org_id', state.org.id)
                     .eq('status', 'active');
+                if (e0) throw e0;
+
+                const { data: invitations, error: e1 } = await db
+                    .from('survey_invitations')
+                    .select('candidate_id, status, sent_at')
+                    .eq('org_id', state.org.id);
                 if (e1) throw e1;
 
-                // Pending surveys
-                const { data: pendingInvs, error: e2 } = await db
-                    .from('survey_invitations')
-                    .select('id', { count: 'exact' })
-                    .eq('org_id', state.org.id)
-                    .in('status', ['pending', 'opened']);
-                if (e2) throw e2;
+                const activeCandidatesCount = candidates?.length || 0;
 
-                // Completed surveys
-                const { data: completedInvs, error: e3 } = await db
-                    .from('survey_invitations')
-                    .select('id', { count: 'exact' })
-                    .eq('org_id', state.org.id)
-                    .eq('status', 'completed');
-                if (e3) throw e3;
+                const pendingCount = invitations?.filter(i => i.status === 'pending' || i.status === 'opened').length || 0;
+                const completedCount = invitations?.filter(i => i.status === 'completed').length || 0;
 
-                // Avg score
-                const { data: responses, error: e4 } = await db
-                    .from('survey_responses')
-                    .select('composite_score')
-                    .eq('org_id', state.org.id)
-                    .not('composite_score', 'is', null);
-                if (e4) throw e4;
+                // Calculate ready for review: candidates where all invitations are completed
+                let readyForReviewCount = 0;
+                if (candidates && invitations) {
+                    candidates.forEach(c => {
+                        const candInvs = invitations.filter(i => i.candidate_id === c.id);
+                        if (candInvs.length > 0 && candInvs.every(i => i.status === 'completed')) {
+                            readyForReviewCount++;
+                        }
+                    });
+                }
 
-                const avgScore = responses.length > 0
-                    ? (responses.reduce((sum, r) => sum + r.composite_score, 0) / responses.length).toFixed(1)
-                    : '-';
+                // Calculate attention items
+                let missingRefsCount = 0;
+                let notSentCount = 0;
+                let inProgressCount = 0;
+
+                const candidateMap = {};
+                if (candidates) {
+                    candidates.forEach(c => {
+                        candidateMap[c.id] = {
+                            invs: invitations?.filter(i => i.candidate_id === c.id) || [],
+                        };
+                    });
+
+                    Object.entries(candidateMap).forEach(([candId, data]) => {
+                        if (data.invs.length === 0) {
+                            missingRefsCount++;
+                        } else {
+                            const hasPending = data.invs.some(i => i.status === 'pending' || i.status === 'opened');
+                            const hasNotSent = data.invs.some(i => !i.sent_at);
+
+                            if (hasNotSent) notSentCount++;
+                            if (hasPending) inProgressCount++;
+                        }
+                    });
+                }
+
+                document.getElementById('card-active-candidates').textContent = activeCandidatesCount;
+                document.getElementById('card-pending-surveys').textContent = pendingCount;
+                document.getElementById('card-completed-surveys').textContent = completedCount;
+                document.getElementById('card-ready-for-review').textContent = readyForReviewCount;
+
+                document.getElementById('count-missing-refs').textContent = missingRefsCount;
+                document.getElementById('count-not-sent').textContent = notSentCount;
+                document.getElementById('count-in-progress').textContent = inProgressCount;
+                document.getElementById('count-ready-review').textContent = readyForReviewCount;
 
                 // Recent activity
                 const { data: recentResponses, error: e5 } = await db
@@ -1382,23 +1784,18 @@ $$ LANGUAGE SQL;
                     .limit(5);
                 if (e5) throw e5;
 
-                document.getElementById('card-active-candidates').textContent = activeCandidates?.length || 0;
-                document.getElementById('card-pending-surveys').textContent = pendingInvs?.length || 0;
-                document.getElementById('card-completed-surveys').textContent = completedInvs?.length || 0;
-                document.getElementById('card-avg-score').textContent = avgScore;
-
-                const tbody = document.getElementById('recent-activity-tbody');
+                const activityList = document.getElementById('activity-list');
                 if (!recentResponses || recentResponses.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-secondary">No activity yet</td></tr>';
+                    activityList.innerHTML = '<li class="activity-item text-secondary">No activity yet</li>';
                 } else {
-                    tbody.innerHTML = recentResponses.map(r => `
-                        <tr>
-                            <td>${escapeHtml(r.candidates.first_name)} ${escapeHtml(r.candidates.last_name)}</td>
-                            <td>${escapeHtml(r.survey_invitations.reference_name)}</td>
-                            <td>${escapeHtml(r.survey_invitations.role_id)}</td>
-                            <td>${formatScore(r.composite_score)}</td>
-                            <td>${formatDate(r.submitted_at)}</td>
-                        </tr>
+                    activityList.innerHTML = recentResponses.map(r => `
+                        <li class="activity-item">
+                            <div>
+                                <span class="activity-candidate">${escapeHtml(r.candidates.first_name)} ${escapeHtml(r.candidates.last_name)}</span>
+                                <span class="activity-reference"> • ${escapeHtml(r.survey_invitations.reference_name)}</span>
+                            </div>
+                            <span class="activity-time">${formatRelativeTime(r.submitted_at)}</span>
+                        </li>
                     `).join('');
                 }
             } catch (err) {
@@ -1407,12 +1804,21 @@ $$ LANGUAGE SQL;
             }
         }
 
+        async function navigateToAttention(type) {
+            state.currentView = 'candidates';
+            document.getElementById('dashboard-view').classList.add('hidden');
+            document.getElementById('candidates-view').classList.remove('hidden');
+            document.querySelector('[data-view="candidates"]').classList.add('active');
+            document.querySelector('[data-view="dashboard"]').classList.remove('active');
+
+            await loadCandidates(type);
+        }
+
         // ============================================================================
         // CANDIDATES
         // ============================================================================
-        async function loadCandidates() {
+        async function loadCandidates(filterType = null) {
             try {
-                // Load survey configs for dropdown
                 const { data: configs, error: e1 } = await db
                     .from('survey_configs')
                     .select('role_id, title')
@@ -1420,7 +1826,6 @@ $$ LANGUAGE SQL;
                 if (e1) throw e1;
                 state.surveyConfigs = configs || [];
 
-                // Update role dropdown
                 const select = document.getElementById('candidate-role');
                 select.innerHTML = '<option value="">Select a role...</option>';
                 state.surveyConfigs.forEach(config => {
@@ -1430,7 +1835,6 @@ $$ LANGUAGE SQL;
                     select.appendChild(opt);
                 });
 
-                // Load candidates
                 const { data: candidates, error: e2 } = await db
                     .from('candidates')
                     .select('*')
@@ -1439,43 +1843,83 @@ $$ LANGUAGE SQL;
                 if (e2) throw e2;
                 state.candidates = candidates || [];
 
-                // Load invitations for counts
                 const { data: invitations, error: e3 } = await db
                     .from('survey_invitations')
-                    .select('candidate_id, status');
+                    .select('candidate_id, status, sent_at')
+                    .eq('org_id', state.org.id);
                 if (e3) throw e3;
                 state.invitations = invitations || [];
 
+                state.filteredCandidates = filterCandidatesByAttention(state.candidates, state.invitations, filterType);
                 renderCandidatesTable();
+
+                const searchInput = document.getElementById('candidates-search');
+                searchInput.value = '';
             } catch (err) {
                 console.error('Error loading candidates:', err);
                 showToast('Error loading candidates', 'error');
             }
         }
 
+        function filterCandidatesByAttention(candidates, invitations, filterType) {
+            if (!filterType) return candidates;
+
+            return candidates.filter(c => {
+                const invs = invitations.filter(i => i.candidate_id === c.id);
+
+                switch (filterType) {
+                    case 'missing-references':
+                        return invs.length === 0;
+                    case 'surveys-not-sent':
+                        return invs.some(i => !i.sent_at);
+                    case 'surveys-in-progress':
+                        return invs.some(i => i.status === 'pending' || i.status === 'opened');
+                    case 'ready-for-review':
+                        return invs.length > 0 && invs.every(i => i.status === 'completed');
+                    default:
+                        return true;
+                }
+            });
+        }
+
         function renderCandidatesTable() {
             const tbody = document.getElementById('candidates-tbody');
-            if (!state.candidates.length) {
-                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-secondary">No candidates yet</td></tr>';
+            const candidates = state.filteredCandidates;
+
+            if (!candidates.length) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-secondary">No candidates found</td></tr>';
                 return;
             }
 
-            tbody.innerHTML = state.candidates.map(c => {
+            tbody.innerHTML = candidates.map(c => {
                 const invs = state.invitations.filter(i => i.candidate_id === c.id);
                 const completed = invs.filter(i => i.status === 'completed').length;
+                const total = invs.length;
 
                 return `
-                    <tr class="clickable" onclick="openCandidateDetail('${c.id}')">
+                    <tr class="clickable" onclick="openCandidateDetailView('${c.id}')">
                         <td><strong>${escapeHtml(c.first_name)} ${escapeHtml(c.last_name)}</strong></td>
                         <td>${escapeHtml(c.role_id || '-')}</td>
                         <td>${escapeHtml(c.department || '-')}</td>
                         <td><span class="status-badge status-${c.status}">${c.status}</span></td>
-                        <td>${invs.length}</td>
-                        <td>${completed}</td>
+                        <td>${total > 0 ? completed + ' of ' + total : '0 of 0'}</td>
+                        <td>${formatDate(c.updated_at)}</td>
                         <td><a href="javascript:" style="color: var(--teal); text-decoration: none; font-weight: 600;">View</a></td>
                     </tr>
                 `;
             }).join('');
+        }
+
+        function searchCandidates(query) {
+            if (!query) {
+                state.filteredCandidates = state.candidates;
+            } else {
+                const q = query.toLowerCase();
+                state.filteredCandidates = state.candidates.filter(c =>
+                    c.first_name.toLowerCase().includes(q) || c.last_name.toLowerCase().includes(q)
+                );
+            }
+            renderCandidatesTable();
         }
 
         async function handleAddCandidate(e) {
@@ -1509,94 +1953,186 @@ $$ LANGUAGE SQL;
             }
         }
 
-        async function openCandidateDetail(candidateId) {
+        async function openCandidateDetailView(candidateId) {
             state.selectedCandidateId = candidateId;
-            const candidate = state.candidates.find(c => c.id === candidateId);
-            if (!candidate) return;
-
-            document.getElementById('detail-candidate-name').textContent = `${candidate.first_name} ${candidate.last_name}`;
-            openModal('candidate-detail-modal');
+            document.getElementById('candidates-view').classList.add('hidden');
+            document.getElementById('candidate-detail-view').classList.remove('hidden');
 
             try {
-                const { data: invitations, error: e1 } = await db
+                const candidate = state.candidates.find(c => c.id === candidateId);
+                if (!candidate) return;
+
+                document.getElementById('detail-candidate-name').textContent = `${candidate.first_name} ${candidate.last_name}`;
+                document.getElementById('detail-candidate-role').textContent = `Role: ${escapeHtml(candidate.role_id || '-')}`;
+                document.getElementById('detail-candidate-dept').textContent = `Dept: ${escapeHtml(candidate.department || '-')}`;
+                document.getElementById('detail-candidate-status').textContent = `Status: ${candidate.status}`;
+
+                const invs = state.invitations.filter(i => i.candidate_id === candidateId);
+                const completed = invs.filter(i => i.status === 'completed').length;
+                document.getElementById('detail-candidate-progress').textContent = `Progress: ${completed} of ${invs.length}`;
+
+                // Load invitations with full data
+                const { data: invitationsData, error: e1 } = await db
                     .from('survey_invitations')
                     .select(`
                         id,
                         reference_name,
                         reference_email,
+                        reference_phone,
                         status,
                         token,
                         role_id,
                         opened_at,
-                        completed_at
+                        completed_at,
+                        sent_at
                     `)
                     .eq('candidate_id', candidateId)
                     .order('created_at', { ascending: false });
                 if (e1) throw e1;
 
-                let html = `
-                    <div style="margin-bottom: 24px;">
-                        <p><strong>Email:</strong> ${escapeHtml(candidate.email || '-')}</p>
-                        <p><strong>Role:</strong> ${escapeHtml(candidate.role_id || '-')}</p>
-                        <p><strong>Department:</strong> ${escapeHtml(candidate.department || '-')}</p>
-                        <p><strong>Status:</strong> <span class="status-badge status-${candidate.status}">${candidate.status}</span></p>
-                    </div>
+                document.getElementById('detail-ref-count').textContent = `(${invitationsData?.length || 0})`;
 
-                    <h3 style="font-size: 16px; margin-bottom: 12px;">References (${invitations?.length || 0})</h3>
-                `;
-
-                if (!invitations || invitations.length === 0) {
-                    html += '<p class="text-secondary">No references yet</p>';
+                const refList = document.getElementById('references-list');
+                if (!invitationsData || invitationsData.length === 0) {
+                    refList.innerHTML = '<p class="text-secondary">No references yet</p>';
                 } else {
-                    invitations.forEach(inv => {
-                        const statusClass = `status-${inv.status}`;
-                        html += `
-                            <div style="background-color: var(--cream); padding: 12px; border-radius: 6px; margin-bottom: 12px; border-left: 3px solid var(--teal);">
-                                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
-                                    <div>
-                                        <strong>${escapeHtml(inv.reference_name)}</strong><br>
-                                        <small class="text-secondary">${escapeHtml(inv.reference_email)}</small>
-                                    </div>
-                                    <span class="status-badge ${statusClass}">${inv.status}</span>
+                    refList.innerHTML = invitationsData.map(inv => `
+                        <div class="reference-card">
+                            <div class="reference-info">
+                                <div class="reference-name">${escapeHtml(inv.reference_name)}</div>
+                                <div class="reference-email">${escapeHtml(inv.reference_email)}</div>
+                                ${inv.reference_phone ? `<div class="reference-phone">${escapeHtml(inv.reference_phone)}</div>` : ''}
+                                <div class="reference-dates">
+                                    ${inv.sent_at ? `<span>Sent: ${formatDate(inv.sent_at)}</span>` : ''}
+                                    ${inv.completed_at ? `<span>Completed: ${formatDate(inv.completed_at)}</span>` : ''}
                                 </div>
-                                <small class="text-secondary">Role: ${escapeHtml(inv.role_id)}</small><br>
-                        `;
-
-                        if (inv.status === 'completed') {
-                            html += `<small class="text-secondary">Completed: ${formatDate(inv.completed_at)}</small>`;
-                        } else if (inv.status === 'opened') {
-                            html += `<small class="text-secondary">Opened: ${formatDate(inv.opened_at)}</small>`;
-                        }
-
-                        html += `
-                                <div style="margin-top: 8px; display: flex; gap: 8px;">
+                                <div class="reference-actions">
                                     <button class="btn btn-small btn-ghost" onclick="showSurveyLink('${inv.token}')">Copy Link</button>
-                        `;
-
-                        if (inv.status === 'completed') {
-                            html += `<button class="btn btn-small btn-ghost" onclick="viewSurveyResponse('${inv.id}')">View Response</button>`;
-                        }
-
-                        html += `</div></div>`;
-                    });
+                                    <button class="btn btn-small btn-ghost" onclick="resendInvitation('${inv.id}', '${inv.reference_email}', '${escapeHtml(inv.reference_name)}', '${inv.reference_phone || ''}')">Resend</button>
+                                    ${inv.status === 'completed' ? `<button class="btn btn-small btn-ghost" onclick="viewSurveyResponseFromDetail('${inv.id}')">View Response</button>` : ''}
+                                </div>
+                            </div>
+                            <div class="reference-status-section">
+                                <span class="status-badge status-${inv.status}">${inv.status}</span>
+                            </div>
+                        </div>
+                    `).join('');
                 }
 
-                html += `<div style="margin-top: 24px; display: flex; gap: 12px;">
-                    <button class="btn btn-primary" onclick="openAddReferenceModal('${candidateId}')">+ Add Reference</button>
-                    <button class="btn btn-ghost" onclick="closeModal('candidate-detail-modal')">Close</button>
-                </div>`;
+                // Survey progress
+                const progressContent = document.getElementById('survey-progress-content');
+                if (!invitationsData || invitationsData.length === 0) {
+                    progressContent.innerHTML = '<p class="text-secondary">No surveys sent yet</p>';
+                } else {
+                    const total = invitationsData.length;
+                    const complete = invitationsData.filter(i => i.status === 'completed').length;
+                    const percent = Math.round((complete / total) * 100);
+                    progressContent.innerHTML = `
+                        <div style="margin-bottom: 12px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                <span>${complete} of ${total} completed</span>
+                                <span>${percent}%</span>
+                            </div>
+                            <div style="background-color: var(--cream); height: 8px; border-radius: 4px; overflow: hidden;">
+                                <div style="background-color: var(--teal); height: 100%; width: ${percent}%;"></div>
+                            </div>
+                        </div>
+                    `;
+                }
 
-                document.getElementById('candidate-detail-content').innerHTML = html;
+                // Raw results
+                const { data: responses, error: e2 } = await db
+                    .from('survey_responses')
+                    .select('*')
+                    .eq('org_id', state.org.id)
+                    .in('invitation_id', invitationsData?.map(i => i.id) || []);
+                if (e2) throw e2;
+
+                const rawResultsContent = document.getElementById('raw-results-content');
+                if (!responses || responses.length === 0) {
+                    rawResultsContent.innerHTML = '<p class="text-secondary">No completed responses yet</p>';
+                } else {
+                    rawResultsContent.innerHTML = responses.map(r => {
+                        const inv = invitationsData.find(i => i.id === r.invitation_id);
+                        const answers = r.answers || {};
+                        return `
+                            <div class="response-item" onclick="toggleResponse(this)">
+                                <div class="response-header">
+                                    <div class="response-name">${escapeHtml(inv?.reference_name || 'Unknown')}</div>
+                                    <div class="response-score ${getScoreClass(r.composite_score)}">${r.composite_score ? r.composite_score.toFixed(1) : '-'}</div>
+                                </div>
+                                <div class="response-date">${formatDate(r.submitted_at)}</div>
+                                <div class="response-content hidden">
+                                    ${Object.entries(answers).map(([key, value]) => `
+                                        <div style="margin-bottom: 8px;">
+                                            <strong>${escapeHtml(key)}</strong><br>
+                                            <small>${escapeHtml(typeof value === 'object' ? JSON.stringify(value) : value)}</small>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
             } catch (err) {
                 console.error('Error loading candidate detail:', err);
-                document.getElementById('candidate-detail-content').innerHTML = '<p class="text-secondary">Error loading details</p>';
+                showToast('Error loading candidate details', 'error');
             }
         }
 
-        function openAddReferenceModal(candidateId) {
-            state.selectedCandidateId = candidateId;
+        function toggleResponse(element) {
+            const content = element.querySelector('.response-content');
+            content.classList.toggle('hidden');
+        }
+
+        function openAddReferenceModalFromDetail() {
             document.getElementById('add-reference-form').reset();
             openModal('add-reference-modal');
+        }
+
+        async function resendInvitation(invitationId, email, name, phone) {
+            try {
+                const candidate = state.candidates.find(c => c.id === state.selectedCandidateId);
+                if (!candidate) return;
+
+                const { data: inv, error: e1 } = await db
+                    .from('survey_invitations')
+                    .select('token')
+                    .eq('id', invitationId)
+                    .single();
+                if (e1) throw e1;
+
+                const surveyUrl = `https://bolstermed.app/survey/${inv.token}`;
+
+                try {
+                    const sendRes = await fetch('/api/send-invitation', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            referenceName: name,
+                            referenceEmail: email,
+                            referencePhone: phone || null,
+                            candidateName: `${candidate.first_name} ${candidate.last_name}`,
+                            surveyUrl: surveyUrl,
+                            orgName: state.org.name,
+                        }),
+                    });
+                    const sendData = await sendRes.json();
+
+                    await db.from('survey_invitations')
+                        .update({ sent_at: new Date().toISOString() })
+                        .eq('id', invitationId);
+
+                    showToast('Invitation resent successfully');
+                    await openCandidateDetailView(state.selectedCandidateId);
+                } catch (sendErr) {
+                    console.error('Send error:', sendErr);
+                    showToast('Failed to send invitation', 'error');
+                }
+            } catch (err) {
+                console.error('Error resending invitation:', err);
+                showToast('Error resending invitation', 'error');
+            }
         }
 
         async function handleAddReference(e) {
@@ -1606,14 +2142,12 @@ $$ LANGUAGE SQL;
             const refPhone = document.getElementById('reference-phone').value || null;
             const candidate = state.candidates.find(c => c.id === state.selectedCandidateId);
 
-            // Disable button while sending
             const submitBtn = e.target.querySelector('button[type="submit"]');
             const originalText = submitBtn.textContent;
             submitBtn.disabled = true;
             submitBtn.textContent = 'Sending...';
 
             try {
-                // Step 1: Create the invitation in the database
                 const { data: invData, error } = await db.from('survey_invitations')
                     .insert({
                         candidate_id: state.selectedCandidateId,
@@ -1631,7 +2165,6 @@ $$ LANGUAGE SQL;
 
                 const surveyUrl = `https://bolstermed.app/survey/${invData.token}`;
 
-                // Step 2: Send email + SMS via API
                 try {
                     const sendRes = await fetch('/api/send-invitation', {
                         method: 'POST',
@@ -1647,12 +2180,10 @@ $$ LANGUAGE SQL;
                     });
                     const sendData = await sendRes.json();
 
-                    // Update invitation status to reflect sending
                     await db.from('survey_invitations')
                         .update({ sent_at: new Date().toISOString() })
                         .eq('token', invData.token);
 
-                    // Build status message
                     let statusParts = [];
                     if (sendData.email && sendData.email.success) statusParts.push('Email sent');
                     else statusParts.push('Email failed');
@@ -1663,11 +2194,11 @@ $$ LANGUAGE SQL;
                     showToast(`Invitation created. ${statusParts.join(', ')}.`);
                 } catch (sendErr) {
                     console.error('Send error:', sendErr);
-                    showToast('Reference added but notification delivery failed. You can copy the link manually.', 'error');
+                    showToast('Reference added but notification delivery failed.', 'error');
                 }
 
                 closeModal('add-reference-modal');
-                await openCandidateDetail(state.selectedCandidateId);
+                await openCandidateDetailView(state.selectedCandidateId);
             } catch (err) {
                 console.error('Error adding reference:', err);
                 showToast('Error adding reference', 'error');
@@ -1690,72 +2221,18 @@ $$ LANGUAGE SQL;
             showToast('Link copied to clipboard');
         }
 
-        // ============================================================================
-        // RESULTS
-        // ============================================================================
-        async function loadResults() {
-            try {
-                const { data: responses, error } = await db
-                    .from('survey_responses')
-                    .select(`
-                        id,
-                        composite_score,
-                        flags,
-                        submitted_at,
-                        candidates (first_name, last_name),
-                        survey_invitations (reference_name, role_id)
-                    `)
-                    .eq('org_id', state.org.id)
-                    .order('submitted_at', { ascending: false });
-                if (error) throw error;
-
-                const tbody = document.getElementById('results-tbody');
-                if (!responses || responses.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="7" class="text-center text-secondary">No results yet</td></tr>';
-                    return;
-                }
-
-                tbody.innerHTML = responses.map(r => {
-                    const hasFlags = r.flags && r.flags.length > 0;
-                    return `
-                        <tr class="clickable" onclick="viewSurveyResponse('${r.id}')">
-                            <td>${escapeHtml(r.candidates.first_name)} ${escapeHtml(r.candidates.last_name)}</td>
-                            <td>${escapeHtml(r.survey_invitations.reference_name)}</td>
-                            <td>${escapeHtml(r.survey_invitations.role_id)}</td>
-                            <td>${formatScore(r.composite_score)}</td>
-                            <td>${hasFlags ? '<span class="flag-icon"></span><strong>' + r.flags.length + '</strong>' : '-'}</td>
-                            <td>${formatDate(r.submitted_at)}</td>
-                            <td><a href="javascript:" style="color: var(--teal); text-decoration: none; font-weight: 600;">View</a></td>
-                        </tr>
-                    `;
-                }).join('');
-            } catch (err) {
-                console.error('Error loading results:', err);
-                showToast('Error loading results', 'error');
-            }
-        }
-
-        async function viewSurveyResponse(responseId) {
-            openModal('response-detail-modal');
-
+        async function viewSurveyResponseFromDetail(invitationId) {
             try {
                 const { data: response, error: e1 } = await db
                     .from('survey_responses')
-                    .select(`
-                        *,
-                        candidates (first_name, last_name),
-                        survey_invitations (reference_name, role_id)
-                    `)
-                    .eq('id', responseId)
+                    .select('*')
+                    .eq('invitation_id', invitationId)
                     .single();
                 if (e1) throw e1;
 
                 const answers = response.answers || {};
                 let html = `
                     <div style="margin-bottom: 20px;">
-                        <p><strong>Candidate:</strong> ${escapeHtml(response.candidates.first_name)} ${escapeHtml(response.candidates.last_name)}</p>
-                        <p><strong>Reference:</strong> ${escapeHtml(response.survey_invitations.reference_name)}</p>
-                        <p><strong>Role:</strong> ${escapeHtml(response.survey_invitations.role_id)}</p>
                         <p><strong>Composite Score:</strong> <strong class="${getScoreClass(response.composite_score)}">${response.composite_score ? response.composite_score.toFixed(1) : '-'}</strong></p>
                         <p><strong>Submitted:</strong> ${formatDate(response.submitted_at)}</p>
                     </div>
@@ -1785,11 +2262,79 @@ $$ LANGUAGE SQL;
                     `;
                 }
 
-                document.getElementById('response-detail-content').innerHTML = html;
+                alert('Response Details:\n\n' + Object.entries(answers).map(([k, v]) => k + ': ' + (typeof v === 'object' ? JSON.stringify(v) : v)).join('\n'));
             } catch (err) {
                 console.error('Error loading response:', err);
-                document.getElementById('response-detail-content').innerHTML = '<p class="text-secondary">Error loading response</p>';
+                showToast('Error loading response', 'error');
             }
+        }
+
+        // ============================================================================
+        // RESULTS
+        // ============================================================================
+        async function loadResults() {
+            try {
+                const { data: responses, error } = await db
+                    .from('survey_responses')
+                    .select(`
+                        id,
+                        composite_score,
+                        flags,
+                        submitted_at,
+                        candidates (first_name, last_name),
+                        survey_invitations (reference_name, role_id)
+                    `)
+                    .eq('org_id', state.org.id)
+                    .order('submitted_at', { ascending: false });
+                if (error) throw error;
+
+                state.responses = responses || [];
+                state.filteredResponses = state.responses;
+                renderResultsTable();
+
+                const searchInput = document.getElementById('results-search');
+                searchInput.value = '';
+            } catch (err) {
+                console.error('Error loading results:', err);
+                showToast('Error loading results', 'error');
+            }
+        }
+
+        function renderResultsTable() {
+            const tbody = document.getElementById('results-tbody');
+            if (!state.filteredResponses || state.filteredResponses.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-secondary">No results yet</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = state.filteredResponses.map(r => {
+                const hasFlags = r.flags && r.flags.length > 0;
+                return `
+                    <tr class="clickable" onclick="openCandidateDetailView('${r.candidates.id}')">
+                        <td>${escapeHtml(r.candidates.first_name)} ${escapeHtml(r.candidates.last_name)}</td>
+                        <td>${escapeHtml(r.survey_invitations.reference_name)}</td>
+                        <td>${escapeHtml(r.survey_invitations.role_id)}</td>
+                        <td>${formatScore(r.composite_score)}</td>
+                        <td>${hasFlags ? '<span class="flag-icon"></span><strong>' + r.flags.length + '</strong>' : '-'}</td>
+                        <td>${formatDate(r.submitted_at)}</td>
+                        <td><a href="javascript:" style="color: var(--teal); text-decoration: none; font-weight: 600;">View</a></td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function searchResults(query) {
+            if (!query) {
+                state.filteredResponses = state.responses;
+            } else {
+                const q = query.toLowerCase();
+                state.filteredResponses = state.responses.filter(r =>
+                    r.candidates.first_name.toLowerCase().includes(q) ||
+                    r.candidates.last_name.toLowerCase().includes(q) ||
+                    r.survey_invitations.reference_name.toLowerCase().includes(q)
+                );
+            }
+            renderResultsTable();
         }
 
         // ============================================================================
@@ -1822,6 +2367,14 @@ $$ LANGUAGE SQL;
 
         document.getElementById('add-candidate-form').addEventListener('submit', handleAddCandidate);
         document.getElementById('add-reference-form').addEventListener('submit', handleAddReference);
+
+        document.getElementById('candidates-search').addEventListener('input', (e) => {
+            searchCandidates(e.target.value);
+        });
+
+        document.getElementById('results-search').addEventListener('input', (e) => {
+            searchResults(e.target.value);
+        });
 
         // ============================================================================
         // INITIALIZATION
