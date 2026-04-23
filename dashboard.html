@@ -845,6 +845,11 @@
             font-weight: 500;
         }
 
+        .updated-warning {
+            color: var(--warning);
+            font-weight: 500;
+        }
+
         .updated-recent {
             color: var(--text-secondary);
         }
@@ -2625,7 +2630,7 @@ $$ LANGUAGE SQL;
 
                 // Recency signal
                 const daysSinceUpdate = c.updated_at ? Math.floor((Date.now() - new Date(c.updated_at).getTime()) / (1000 * 60 * 60 * 24)) : null;
-                const updatedClass = daysSinceUpdate !== null && daysSinceUpdate > 7 ? 'updated-stale' : 'updated-recent';
+                const updatedClass = daysSinceUpdate !== null && daysSinceUpdate > 7 ? 'updated-stale' : (daysSinceUpdate !== null && daysSinceUpdate >= 3 ? 'updated-warning' : 'updated-recent');
                 const relTime = relativeTime(c.updated_at);
                 const fullDate = formatDate(c.updated_at);
 
@@ -2635,7 +2640,7 @@ $$ LANGUAGE SQL;
                 return `
                     <tr class="${rowClass}" onclick="openCandidateDetailView('${c.id}')">
                         <td><strong>${escapeHtml(c.first_name)} ${escapeHtml(c.last_name)}</strong></td>
-                        <td>${escapeHtml(c.role_id || '-')}</td>
+                        <td>${formatRoleLabel(c.role_id) || '-'}</td>
                         <td>${escapeHtml(c.department || '-')}</td>
                         <td><span class="status-badge status-${status.cls}">${status.label}</span></td>
                         <td>
