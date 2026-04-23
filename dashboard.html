@@ -3630,7 +3630,7 @@ $$ LANGUAGE SQL;
 
             const concernBulletsHtml = concernBullets.length > 0
                 ? concernBullets.map(s => `<li style="margin-bottom: 6px;">${escapeHtml(s)}</li>`).join('')
-                : '<li>No meaningful concerns identified from submitted references.</li>';
+                : '<li style="color: #999;">No meaningful concerns identified from submitted references.</li><li style="color: #999; font-size: 13px;">No additional review required based on current signal.</li>';
 
             // === RED FLAGS with expandable detail ===
             const flagsHtml = e.criticalFlags.length > 0
@@ -3646,7 +3646,7 @@ $$ LANGUAGE SQL;
                         </div>
                     </div>
                 `).join('')
-                : '<p style="color: var(--success); font-size: 14px;">No red flags identified.</p>';
+                : '<p style="color: var(--success); font-size: 14px;">No red flags identified based on submitted responses.</p>';
 
             // === COMMENTS ===
             const commentsHtml = e.comments.length > 0
@@ -3656,7 +3656,7 @@ $$ LANGUAGE SQL;
                         <div style="font-size: 14px; color: #333; font-style: italic;">"${escapeHtml(cm.text)}"</div>
                     </div>
                 `).join('')
-                : '<p style="color: #999; font-size: 14px;">No qualitative comments provided.</p>';
+                : '<p style="color: #999; font-size: 14px;">No qualitative written comments provided.</p>';
 
             // === REFERENCE BREAKDOWN (collapsible) ===
             // Map answer values to scores for bar display
@@ -3725,6 +3725,10 @@ $$ LANGUAGE SQL;
             });
             const confidenceExplain = `${e.confidence} confidence — ${e.confidenceReason} ${confDetails.length > 0 ? '(' + confDetails.join('; ') + ')' : ''}`;
 
+            const tierSubtext = getTierSubtext(e);
+            const signalSummary = getSignalSummary(e);
+            const actionCue = getActionCue(e);
+
             // =============================================
             // PAGE LAYOUT — Decision-first hierarchy
             // =============================================
@@ -3732,59 +3736,64 @@ $$ LANGUAGE SQL;
                 <a class="back-link" onclick="backToResultsList()">← Back to Results</a>
                 <div class="eval-detail-panel">
 
-                    <!-- 1. RECOMMENDATION BLOCK (top) -->
-                    <div style="text-align: center; padding: 24px 20px 20px; margin-bottom: 24px; border-bottom: 2px solid #f0f0f0;">
-                        <div style="font-size: 13px; color: #888; margin-bottom: 4px;">${escapeHtml(c.first_name)} ${escapeHtml(c.last_name)} ${c.role_id ? '· ' + escapeHtml(c.role_id) : ''} ${c.department ? '· ' + escapeHtml(c.department) : ''}</div>
-                        <div class="eval-recommendation ${e.recClass}" style="font-size: 18px; padding: 10px 24px; display: inline-block; margin-bottom: 12px;">${e.recommendation}</div>
-                        <div style="display: flex; justify-content: center; gap: 32px; margin-top: 8px;">
+                    <!-- 1. RECOMMENDATION BLOCK (dominant visual) -->
+                    <div style="text-align: center; padding: 28px 20px 24px; margin-bottom: 28px; border-bottom: 2px solid #f0f0f0;">
+                        <div style="font-size: 14px; color: #666; margin-bottom: 8px; font-weight: 500;">${escapeHtml(c.first_name)} ${escapeHtml(c.last_name)} ${c.role_id ? '· ' + escapeHtml(c.role_id) : ''} ${c.department ? '· ' + escapeHtml(c.department) : ''}</div>
+                        <div class="eval-recommendation ${e.recClass}" style="font-size: 22px; padding: 12px 32px; display: inline-block; margin-bottom: 6px; letter-spacing: 0.3px;">${e.recommendation}</div>
+                        <div style="font-size: 13px; color: #888; margin-bottom: 16px;">${tierSubtext}</div>
+                        <div style="display: flex; justify-content: center; gap: 40px; margin-top: 12px;">
                             <div style="text-align: center;">
-                                <div style="font-size: 28px; font-weight: 700; color: ${e.score >= 3.5 ? 'var(--success)' : (e.score >= 2.5 ? '#333' : 'var(--danger)')}">${e.score.toFixed(1)}</div>
+                                <div style="font-size: 32px; font-weight: 700; color: ${e.score >= 3.5 ? 'var(--success)' : (e.score >= 2.5 ? '#333' : 'var(--danger)')}">${e.score.toFixed(1)}</div>
                                 <div style="font-size: 12px; color: #999;">Score / 4.0</div>
                             </div>
                             <div style="text-align: center;">
-                                <div style="font-size: 28px; font-weight: 700;">${e.completedCount}</div>
+                                <div style="font-size: 32px; font-weight: 700;">${e.completedCount}</div>
                                 <div style="font-size: 12px; color: #999;">of ${ev.totalInvitations} refs</div>
                             </div>
                             <div style="text-align: center;">
-                                <span class="eval-confidence confidence-${e.confidence.toLowerCase()}" style="font-size: 14px; padding: 4px 14px;">${e.confidence}</span>
-                                <div style="font-size: 12px; color: #999; margin-top: 4px;">Confidence</div>
+                                <span class="eval-confidence confidence-${e.confidence.toLowerCase()}" style="font-size: 14px; padding: 5px 16px;">${e.confidence}</span>
+                                <div style="font-size: 11px; color: #999; margin-top: 6px;">${e.confidenceReason}</div>
                             </div>
                         </div>
-                        <p style="font-size: 13px; color: #777; max-width: 600px; margin: 12px auto 0;">${generateHiringSummary(c, e)}</p>
+                        <div style="font-size: 13px; color: #666; margin-top: 16px; max-width: 560px; margin-left: auto; margin-right: auto;">${signalSummary}</div>
                     </div>
 
-                    <!-- 2. STRENGTHS / CONCERNS -->
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
-                        <div class="eval-detail-section" style="background: #f0faf4; padding: 16px 20px; border-radius: 10px;">
-                            <h3 style="margin-top: 0; color: var(--success);">Strengths</h3>
-                            <ul style="margin: 0; padding-left: 18px;">${strengthsHtml}</ul>
+                    <!-- 2. STRENGTHS / CONCERNS (visual contrast) -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 28px;">
+                        <div style="background: #f0faf4; padding: 20px 24px; border-radius: 12px; border-left: 4px solid var(--success);">
+                            <h3 style="margin: 0 0 12px 0; color: var(--success); font-size: 15px;">Strengths</h3>
+                            <ul style="margin: 0; padding-left: 18px; font-size: 14px; line-height: 1.7; color: #333;">${strengthsHtml}</ul>
                         </div>
-                        <div class="eval-detail-section" style="background: ${concernBullets.length > 0 ? '#fffbf0' : '#f8f8f8'}; padding: 16px 20px; border-radius: 10px;">
-                            <h3 style="margin-top: 0; color: ${concernBullets.length > 0 ? 'var(--warning)' : '#999'};">Concerns</h3>
-                            <ul style="margin: 0; padding-left: 18px;">${concernBulletsHtml}</ul>
+                        <div style="background: ${concernBullets.length > 0 ? '#fffbf0' : '#f8f9fa'}; padding: 20px 24px; border-radius: 12px; border-left: 4px solid ${concernBullets.length > 0 ? 'var(--warning)' : '#ddd'};">
+                            <h3 style="margin: 0 0 12px 0; color: ${concernBullets.length > 0 ? 'var(--warning)' : '#aaa'}; font-size: 15px;">Concerns</h3>
+                            <ul style="margin: 0; padding-left: 18px; font-size: 14px; line-height: 1.7; color: #333;">${concernBulletsHtml}</ul>
                         </div>
+                    </div>
+
+                    <!-- ACTION CUE -->
+                    <div style="text-align: center; margin-bottom: 28px; padding: 12px 20px; background: #fafafa; border-radius: 8px;">
+                        <span style="font-size: 13px; font-weight: 600; color: ${actionCue.cls};">${actionCue.text}</span>
                     </div>
 
                     <!-- 3. RED FLAGS -->
                     <div class="eval-detail-section" style="margin-bottom: 24px;">
-                        <h3>Red Flags</h3>
+                        <h3 style="font-size: 15px;">Red Flags</h3>
                         ${flagsHtml}
                     </div>
 
                     <!-- 4. REFERENCE COMMENTS -->
                     <div class="eval-detail-section" style="margin-bottom: 24px;">
-                        <h3>Reference Comments</h3>
+                        <h3 style="font-size: 15px;">Reference Comments</h3>
                         ${commentsHtml}
                     </div>
 
-                    <!-- 5. DETAILED BREAKDOWN (collapsed) -->
-                    <div class="eval-detail-section">
+                    <!-- 5. DETAILED BREAKDOWN (collapsed, secondary) -->
+                    <div class="eval-detail-section" style="background: #fafafa; padding: 16px 20px; border-radius: 10px;">
                         <div style="cursor: pointer; display: flex; align-items: center; gap: 8px;" onclick="document.getElementById('ref-breakdown-detail').classList.toggle('hidden'); this.querySelector('.toggle-icon').textContent = document.getElementById('ref-breakdown-detail').classList.contains('hidden') ? '▶' : '▼';">
-                            <span class="toggle-icon" style="font-size: 12px;">▶</span>
-                            <h3 style="margin: 0;">Detailed Reference Breakdown</h3>
-                            <span style="font-size: 12px; color: #999;">${e.completedCount} reference${e.completedCount > 1 ? 's' : ''}</span>
+                            <span class="toggle-icon" style="font-size: 12px; color: #999;">▶</span>
+                            <h3 style="margin: 0; font-size: 14px; color: #666;">Detailed Reference Breakdown</h3>
+                            <span style="font-size: 12px; color: #bbb; margin-left: auto;">${e.completedCount} reference${e.completedCount > 1 ? 's' : ''} · optional deep dive</span>
                         </div>
-                        <p style="font-size: 12px; color: #999; margin: 4px 0 0 20px;">${confidenceExplain}</p>
                         <div id="ref-breakdown-detail" class="hidden" style="margin-top: 16px;">
                             ${refBreakdownHtml}
                         </div>
@@ -3796,25 +3805,71 @@ $$ LANGUAGE SQL;
             `;
         }
 
-        function generateHiringSummary(candidate, evaluation) {
-            const name = `${candidate.first_name} ${candidate.last_name}`;
+        // Short tier subtext — explains the recommendation in one line
+        function getTierSubtext(evaluation) {
             const e = evaluation;
-            let summary = '';
+            if (e.hardGate) return 'Risk signals identified that require additional review.';
+            if (e.softGate) return 'Generally positive performance with areas warranting discussion.';
+            if (e.score >= 3.5) return 'Consistent high performance across evaluated domains.';
+            if (e.score >= 2.5) return 'Generally positive feedback across evaluated domains.';
+            return 'Mixed or limited signal across evaluated domains.';
+        }
 
-            if (e.hardGate) {
-                summary = `Based on reference survey results, ${escapeHtml(name)} scored ${e.score.toFixed(1)}/4.0 across ${e.completedCount} reference${e.completedCount > 1 ? 's' : ''}. However, ${e.gateReasons.length} risk signal${e.gateReasons.length > 1 ? 's were' : ' was'} identified: ${e.gateReasons.join('; ')}. These findings override the performance score and indicate additional diligence is advised before proceeding.`;
-            } else if (e.softGate) {
-                summary = `Based on reference survey results, ${escapeHtml(name)} scored ${e.score.toFixed(1)}/4.0 across ${e.completedCount} reference${e.completedCount > 1 ? 's' : ''}. While performance scores are ${e.score >= 3.0 ? 'generally positive' : 'mixed'}, the following signals were noted: ${e.gateReasons.join('; ')}. These areas may warrant further discussion during the evaluation process.`;
-            } else if (e.score >= 3.5) {
-                summary = `Based on reference survey results, ${escapeHtml(name)} received consistently strong feedback across ${e.completedCount} reference${e.completedCount > 1 ? 's' : ''} with a score of ${e.score.toFixed(1)}/4.0. No risk signals were identified — no red flags, no conduct concerns, and all references provided favorable assessments. Confidence level is ${e.confidence.toLowerCase()}.`;
-            } else {
-                summary = `Based on reference survey results, ${escapeHtml(name)} scored ${e.score.toFixed(1)}/4.0 across ${e.completedCount} reference${e.completedCount > 1 ? 's' : ''}. No risk signals were identified. The feedback is generally positive with no notable concerns. Confidence level is ${e.confidence.toLowerCase()}.`;
-            }
+        // One-line signal summary — replaces the long paragraph
+        function getSignalSummary(evaluation) {
+            const e = evaluation;
+            if (e.hardGate) return 'Risk signals override performance score — further review advised.';
+            if (e.softGate) return 'Performance is positive but specific concerns were noted.';
+            if (e.score >= 3.5 && e.criticalFlags.length === 0) return 'Consistent positive feedback with no identified risk signals.';
+            if (e.score >= 2.5) return 'Generally favorable feedback with no critical concerns.';
+            return 'Limited or mixed signal — additional references may strengthen evaluation.';
+        }
 
-            return summary;
+        // Action cue — tells the user what to do next
+        function getActionCue(evaluation) {
+            const e = evaluation;
+            if (e.hardGate) return { text: 'Further review recommended based on identified concerns', cls: 'var(--danger)' };
+            if (e.softGate) return { text: 'Review flagged areas before proceeding', cls: 'var(--warning)' };
+            return { text: 'No additional review required based on current signal', cls: 'var(--success)' };
         }
 
         const EVAL_DISCLAIMER = 'This summary reflects aggregated reference feedback and is intended to support, not replace, independent hiring decisions.';
+
+        // Human-readable strength descriptions
+        const STRENGTH_PHRASES = {
+            'Clinical Decision-Making': 'Strong clinical decision-making under pressure',
+            'Department Flow': 'Strong department flow and efficiency',
+            'Staff Communication': 'Positive communication with staff',
+            'Consultant Disagreements': 'Professional handling of consultant disagreements',
+            'Professionalism': 'High professionalism and reliability',
+            'Clinical Assessment': 'Strong clinical assessment skills',
+            'Patient Load Management': 'Effective patient load management',
+            'Team Dynamics': 'Excellent team dynamics and collaboration',
+            'Patient Communication': 'Strong patient and family communication',
+            'Clinical Competence': 'Solid clinical competence',
+            'Autonomy & Judgment': 'Appropriate clinical autonomy and judgment',
+            'Team Collaboration': 'Excellent team collaboration',
+            'Documentation': 'Thorough and timely documentation',
+            'Medical Management': 'Strong medical management of complex patients',
+            'Handoffs & Transitions': 'Clear handoffs and care transitions',
+            'Interdisciplinary Communication': 'Strong interdisciplinary communication',
+            'Census Management': 'Efficient census and throughput management',
+            'Critical Care Skills': 'Strong critical care nursing skills',
+            'Crisis Response': 'Effective crisis response and composure',
+            'Team Communication': 'Clear and proactive team communication',
+            'Family Communication': 'Compassionate family communication',
+            'Surgical Skills': 'Strong technical skills in the OR',
+            'Case Preparation': 'Thorough case preparation and setup',
+            'OR Teamwork': 'Excellent OR teamwork',
+            'Adaptability': 'Adaptable to unexpected changes',
+            'Anesthetic Management': 'Strong anesthetic management',
+            'Crisis Management': 'Effective crisis management',
+            'OR Communication': 'Clear OR communication',
+            'Pre-op/Post-op': 'Thorough pre-op and post-op care',
+            'Clinical Skills': 'Strong clinical evaluation skills',
+            'Patient Outcomes': 'Consistently positive patient outcomes',
+            'Patient Rapport': 'Excellent patient rapport and engagement'
+        };
 
         function generateStrengths(evaluation) {
             const strengths = [];
@@ -3832,20 +3887,20 @@ $$ LANGUAGE SQL;
                 });
             });
 
-            // Sort by consistency (most references agreeing)
+            // Sort by consistency (most references agreeing), use human phrases
             const sorted = Object.entries(topScores).sort((a, b) => b[1] - a[1]);
-            sorted.slice(0, 3).forEach(([label, count]) => {
-                if (count >= responses.length) {
-                    strengths.push(`${label} — rated highest by all ${count} reference${count > 1 ? 's' : ''}`);
-                } else {
-                    strengths.push(`${label} — rated highest by ${count} of ${responses.length} references`);
-                }
+            sorted.slice(0, 3).forEach(([label]) => {
+                strengths.push(STRENGTH_PHRASES[label] || label);
             });
 
-            // Check if all refs strongly recommend
-            const strongRecs = responses.filter(r => (r.answers || {}).hire_recommendation === 'strongly_recommend');
-            if (strongRecs.length === responses.length && responses.length > 0) {
-                strengths.push(`All ${responses.length} references strongly recommend hiring`);
+            // If we still have room, check for strong recommendations
+            if (strengths.length < 3) {
+                const strongRecs = responses.filter(r => (r.answers || {}).hire_recommendation === 'strongly_recommend');
+                if (strongRecs.length === responses.length && responses.length > 0) {
+                    strengths.push('All references provided strongest endorsement');
+                } else if (strongRecs.length > 0) {
+                    strengths.push('Endorsed without hesitation by reference' + (strongRecs.length > 1 ? 's' : ''));
+                }
             }
 
             return strengths.slice(0, 3);
