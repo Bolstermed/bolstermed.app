@@ -245,9 +245,16 @@
         .sidebar-logo {
             padding: 0 24px;
             margin-bottom: 32px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-logo-text {
             font-family: 'Playfair Display', serif;
-            font-size: 20px;
+            font-size: 22px;
             font-weight: 700;
+            letter-spacing: -0.3px;
         }
 
         .sidebar-logo .bolster {
@@ -256,6 +263,12 @@
 
         .sidebar-logo .med {
             color: var(--teal);
+        }
+
+        .sidebar-logo-icon {
+            width: 36px;
+            height: 36px;
+            flex-shrink: 0;
         }
 
         .nav-item {
@@ -1692,7 +1705,17 @@ $$ LANGUAGE SQL;
         <!-- Sidebar -->
         <div class="sidebar">
             <div class="sidebar-logo">
-                <span class="bolster">Bolster</span><span class="med">Med</span>
+                <svg class="sidebar-logo-icon" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+                    <!-- B shape with leaf curve -->
+                    <path d="M30 100 C30 100, 30 35, 55 20 C65 14, 78 18, 78 30 C78 40, 68 45, 60 45 L60 45 C72 45, 85 52, 85 65 C85 80, 70 90, 55 90 L30 90 Z" fill="#ffffff" opacity="0.95"/>
+                    <!-- Medical cross -->
+                    <rect x="38" y="18" width="14" height="28" rx="4" fill="#2db89a"/>
+                    <rect x="31" y="25" width="28" height="14" rx="4" fill="#2db89a"/>
+                    <!-- Upward trend arrow -->
+                    <line x1="65" y1="30" x2="90" y2="8" stroke="#2db89a" stroke-width="4" stroke-linecap="round"/>
+                    <polyline points="80,6 91,6 91,17" fill="none" stroke="#2db89a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="sidebar-logo-text"><span class="bolster">Bolster</span><span class="med">Med</span></span>
             </div>
             <nav id="sidebar-nav">
                 <div class="nav-item active" data-view="dashboard">Dashboard</div>
