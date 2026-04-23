@@ -5,6 +5,8 @@
   "rewrites": [
     { "source": "/dashboard", "destination": "/dashboard.html" },
     { "source": "/dashboard/(.*)", "destination": "/dashboard.html" },
+    { "source": "/privacy", "destination": "/privacy.html" },
+    { "source": "/terms", "destination": "/terms.html" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
