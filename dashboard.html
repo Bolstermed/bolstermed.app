@@ -3586,11 +3586,11 @@ $$ LANGUAGE SQL;
                         <div class="eval-card-body">
                             <div class="eval-meta-row">
                                 <span class="eval-meta-item">${e.completedCount} of ${ev.totalInvitations} refs</span>
-                                <span class="eval-meta-item eval-confidence confidence-${e.confidence.toLowerCase()}" title="${escapeHtml(e.confidenceReason)}">${e.confidence} confidence</span>
                                 ${flagCount > 0 ? `<span class="eval-meta-item" style="color: var(--danger);">${flagCount} flag${flagCount > 1 ? 's' : ''}</span>` : ''}
                             </div>
                             ${flagPills || extraFlags ? `<div class="eval-flags-row">${flagPills}${extraFlags}</div>` : ''}
-                            <div class="eval-recommendation ${e.recClass}">${e.recommendation}</div>
+                            <div class="eval-recommendation ${e.recClass}" style="font-size: 13px; padding: 4px 14px;">${e.recommendation}</div>
+                            <div style="margin-top: 4px;"><span class="eval-confidence confidence-${e.confidence.toLowerCase()}" title="${escapeHtml(e.confidenceReason)}" style="font-size: 10px; padding: 2px 8px; border-radius: 10px; cursor: help;">${e.confidence} confidence</span></div>
                         </div>
                     </div>
                 `;
