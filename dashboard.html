@@ -3311,7 +3311,7 @@ $$ LANGUAGE SQL;
             if (completed.length <= 1 || shortRels.length > completed.length / 2 || rarelyWorked.length > completed.length / 2) {
                 confidence = 'Low';
                 confidenceReason = completed.length <= 1
-                    ? 'Only one reference survey completed — limited signal.'
+                    ? 'Based on a single completed reference — limited signal.'
                     : 'Most references had short relationship durations or limited direct exposure.';
             } else if (shortRels.length > 0 || rarelyWorked.length > 0 || completed.length === 2) {
                 confidence = 'Moderate';
@@ -3455,6 +3455,15 @@ $$ LANGUAGE SQL;
 
         async function loadResults() {
             try {
+                // Load invitations first (needed for accurate ref counts)
+                if (!state.invitations || state.invitations.length === 0) {
+                    const { data: invData } = await db
+                        .from('survey_invitations')
+                        .select('*')
+                        .eq('org_id', state.org.id);
+                    state.invitations = invData || [];
+                }
+
                 // Load all responses with candidate + invitation data
                 const { data: responses, error } = await db
                     .from('survey_responses')
@@ -3504,12 +3513,14 @@ $$ LANGUAGE SQL;
             });
 
             state.evaluations = Object.values(grouped).map(g => {
-                const allInvs = state.invitations?.filter(i => i.candidate_id === g.candidate.id) || g.responses;
+                const allInvs = state.invitations?.filter(i => i.candidate_id === g.candidate.id) || [];
                 const eval_ = aggregateEvaluation(g.candidate, g.responses);
+                // totalInvitations = max of invitations sent vs responses received (never show "1 of 0")
+                const totalInvCount = Math.max(allInvs.length, g.responses.length);
                 return {
                     candidate: g.candidate,
                     responses: g.responses,
-                    totalInvitations: allInvs.length,
+                    totalInvitations: totalInvCount,
                     evaluation: eval_
                 };
             });
@@ -3652,7 +3663,7 @@ $$ LANGUAGE SQL;
             const commentsHtml = e.comments.length > 0
                 ? e.comments.map(cm => `
                     <div style="background: #fafafa; border-left: 3px solid var(--teal); padding: 12px 16px; margin-bottom: 10px; border-radius: 0 8px 8px 0;">
-                        <div style="font-size: 12px; color: #999; margin-bottom: 4px;">${escapeHtml(cm.ref)} · ${escapeHtml(QUESTION_LABELS[cm.question] || cm.question)}</div>
+                        <div style="font-size: 12px; color: #999; margin-bottom: 4px;">${escapeHtml(cm.ref)} · Reference Comment</div>
                         <div style="font-size: 14px; color: #333; font-style: italic;">"${escapeHtml(cm.text)}"</div>
                     </div>
                 `).join('')
@@ -3755,18 +3766,17 @@ $$ LANGUAGE SQL;
                                 <div style="font-size: 11px; color: #999; margin-top: 6px;">${e.confidenceReason}</div>
                             </div>
                         </div>
-                        <div style="font-size: 13px; color: #666; margin-top: 16px; max-width: 560px; margin-left: auto; margin-right: auto;">${signalSummary}</div>
                     </div>
 
                     <!-- 2. STRENGTHS / CONCERNS (visual contrast) -->
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 28px;">
-                        <div style="background: #f0faf4; padding: 20px 24px; border-radius: 12px; border-left: 4px solid var(--success);">
+                        <div style="background: #f0faf4; padding: 20px 24px; border-radius: 12px;">
                             <h3 style="margin: 0 0 12px 0; color: var(--success); font-size: 15px;">Strengths</h3>
                             <ul style="margin: 0; padding-left: 18px; font-size: 14px; line-height: 1.7; color: #333;">${strengthsHtml}</ul>
                         </div>
-                        <div style="background: ${concernBullets.length > 0 ? '#fffbf0' : '#f8f9fa'}; padding: 20px 24px; border-radius: 12px; border-left: 4px solid ${concernBullets.length > 0 ? 'var(--warning)' : '#ddd'};">
+                        <div style="background: #fff; padding: 20px 24px; border-radius: 12px; border: 1px solid ${concernBullets.length > 0 ? '#f5c6a0' : '#e8e8e8'};">
                             <h3 style="margin: 0 0 12px 0; color: ${concernBullets.length > 0 ? 'var(--warning)' : '#aaa'}; font-size: 15px;">Concerns</h3>
-                            <ul style="margin: 0; padding-left: 18px; font-size: 14px; line-height: 1.7; color: #333;">${concernBulletsHtml}</ul>
+                            <ul style="margin: 0; padding-left: 18px; font-size: 14px; line-height: 1.7; color: ${concernBullets.length > 0 ? '#333' : '#999'};">${concernBulletsHtml}</ul>
                         </div>
                     </div>
 
