@@ -986,10 +986,10 @@
             margin-top: 4px;
         }
 
-        .rec-strong-consider { background: #c8e6c9; color: #1b7a37; }
-        .rec-consider { background: #e8f5e9; color: #388e3c; }
-        .rec-consider-caution { background: #fff3e0; color: #e67e22; }
-        .rec-needs-review { background: #ffebee; color: #c62828; }
+        .rec-strongly-favorable { background: #c8e6c9; color: #1b7a37; }
+        .rec-favorable { background: #e8f5e9; color: #388e3c; }
+        .rec-mixed { background: #fff3e0; color: #e67e22; }
+        .rec-unfavorable { background: #ffebee; color: #c62828; }
 
         .eval-refs-bar {
             display: flex;
@@ -3053,68 +3053,223 @@ $$ LANGUAGE SQL;
         // ============================================================================
         const CONCERN_KEYWORDS = ['concern', 'hesitation', 'not sure', 'inconsistent', 'would not', 'needs improvement', 'struggled', 'difficult', 'unreliable', 'not recommend', 'problematic', 'issue'];
 
+        // Maps question IDs to readable labels
+        const QUESTION_LABELS = {
+            clinical_decision_making: 'Clinical Decision-Making',
+            dept_flow: 'Department Flow',
+            staff_communication: 'Staff Communication',
+            consultant_disagreements: 'Consultant Disagreements',
+            professionalism_rating: 'Professionalism',
+            conduct_concerns: 'Conduct Concerns',
+            concern_severity: 'Concern Severity',
+            hire_recommendation: 'Hire Recommendation',
+            clinical_assessment: 'Clinical Assessment',
+            patient_load: 'Patient Load Management',
+            team_dynamics: 'Team Dynamics',
+            patient_communication: 'Patient Communication',
+            clinical_competence: 'Clinical Competence',
+            autonomy_judgment: 'Autonomy & Judgment',
+            team_collaboration: 'Team Collaboration',
+            documentation: 'Documentation',
+            medical_management: 'Medical Management',
+            handoffs_transitions: 'Handoffs & Transitions',
+            interdisciplinary: 'Interdisciplinary Communication',
+            census_management: 'Census Management',
+            critical_care_skills: 'Critical Care Skills',
+            crisis_response: 'Crisis Response',
+            team_communication: 'Team Communication',
+            family_communication: 'Family Communication',
+            surgical_skills: 'Surgical Skills',
+            case_preparation: 'Case Preparation',
+            or_teamwork: 'OR Teamwork',
+            adaptability: 'Adaptability',
+            anesthetic_management: 'Anesthetic Management',
+            crisis_management: 'Crisis Management',
+            or_communication: 'OR Communication',
+            preop_postop: 'Pre-op/Post-op',
+            clinical_skills: 'Clinical Skills',
+            patient_outcomes: 'Patient Outcomes',
+            interdisciplinary_communication: 'Interdisciplinary Communication',
+            patient_rapport: 'Patient Rapport'
+        };
+
+        // Red flag answer values from survey config (score = 1 or flag: "danger")
+        const RED_FLAG_VALUES = ['concerning', 'struggled', 'problematic', 'do_not_recommend'];
+
+        // Score-2 answer values (soft gate candidates)
+        const SCORE_2_VALUES = ['inconsistent', 'average', 'mixed', 'recommend_with_reservations'];
+
         function detectFlags(response) {
             const flags = [];
             const answers = response.answers || {};
-            const score = response.composite_score;
 
-            // A. Explicit negative responses
-            Object.entries(answers).forEach(([key, val]) => {
-                const v = String(val).toLowerCase();
-                if (v.includes('would not recommend') || v.includes('no') && key.toLowerCase().includes('recommend')) {
-                    flags.push({ type: 'critical', label: 'Would not recommend', detail: `Reference answered "${val}" for "${key}"` });
-                }
-                if (v.includes('maybe') || v.includes('hesitation') || v.includes('not sure')) {
-                    if (key.toLowerCase().includes('recommend') || key.toLowerCase().includes('rehire')) {
-                        flags.push({ type: 'concern', label: 'Rehire hesitation', detail: `Reference answered "${val}" for "${key}"` });
-                    }
+            // =============================================
+            // A. HARD GATE: Explicit "Do Not Recommend" (Q10)
+            // =============================================
+            if (answers.hire_recommendation === 'do_not_recommend') {
+                flags.push({
+                    type: 'critical',
+                    label: 'Do Not Recommend',
+                    detail: 'Reference explicitly would not hire this candidate for their department'
+                });
+            }
+
+            // =============================================
+            // B. HARD GATE: Significant conduct concern (Q9 follow-up)
+            // =============================================
+            if (answers.concern_severity === 'significant') {
+                flags.push({
+                    type: 'critical',
+                    label: 'Significant Safety Concern',
+                    detail: 'Formally reported concern or direct impact on patient care'
+                });
+            }
+
+            // =============================================
+            // C. HARD GATE: Any RED FLAG answer in performance Qs (Q4-Q8)
+            // =============================================
+            const performanceKeys = [
+                'clinical_decision_making', 'dept_flow',
+                'staff_communication', 'consultant_disagreements',
+                'professionalism_rating',
+                // RN variants
+                'clinical_assessment', 'patient_load', 'team_dynamics', 'patient_communication',
+                // NP/PA variants
+                'clinical_competence', 'autonomy_judgment', 'team_collaboration', 'documentation',
+                // Hospitalist variants
+                'medical_management', 'handoffs_transitions', 'interdisciplinary', 'census_management',
+                // ICU RN variants
+                'critical_care_skills', 'crisis_response', 'team_communication', 'family_communication',
+                // Surg tech variants
+                'surgical_skills', 'case_preparation', 'or_teamwork', 'adaptability',
+                // Anesthesiologist variants
+                'anesthetic_management', 'crisis_management', 'or_communication', 'preop_postop',
+                // PT variants
+                'clinical_skills', 'patient_outcomes', 'interdisciplinary_communication', 'patient_rapport'
+            ];
+
+            performanceKeys.forEach(key => {
+                const val = answers[key];
+                if (val && RED_FLAG_VALUES.includes(val)) {
+                    const label = QUESTION_LABELS[key] || key;
+                    flags.push({
+                        type: 'critical',
+                        label: `${label}: Red Flag`,
+                        detail: `Rated "${val}" — lowest tier response indicating serious concern`
+                    });
                 }
             });
 
-            // B. Score-based flags
-            const numericAnswers = [];
-            Object.entries(answers).forEach(([key, val]) => {
-                const n = parseFloat(val);
-                if (!isNaN(n) && n >= 1 && n <= 5) {
-                    numericAnswers.push({ key, val: n });
-                    if (n <= 2) {
-                        flags.push({ type: 'critical', label: `Low score: ${n}/5`, detail: `"${key}" rated ${n} out of 5` });
-                    }
+            // =============================================
+            // D. SOFT GATE: Moderate conduct concern
+            // =============================================
+            if (answers.concern_severity === 'moderate') {
+                flags.push({
+                    type: 'concern',
+                    label: 'Moderate Conduct Concern',
+                    detail: 'A noticeable pattern or repeated behavior was reported'
+                });
+            }
+
+            // =============================================
+            // E. SOFT GATE: "Recommend with reservations" (Q10)
+            // =============================================
+            if (answers.hire_recommendation === 'recommend_with_reservations') {
+                flags.push({
+                    type: 'concern',
+                    label: 'Recommended with Reservations',
+                    detail: 'Reference recommends but flagged specific concerns worth discussing'
+                });
+            }
+
+            // =============================================
+            // F. SOFT GATE: Multiple score-2 answers
+            // =============================================
+            const score2Hits = [];
+            performanceKeys.forEach(key => {
+                const val = answers[key];
+                if (val && SCORE_2_VALUES.includes(val)) {
+                    score2Hits.push(QUESTION_LABELS[key] || key);
                 }
             });
-
-            const lowScores = numericAnswers.filter(a => a.val <= 3);
-            if (lowScores.length >= 3 && !flags.some(f => f.label.includes('Low score'))) {
-                flags.push({ type: 'concern', label: 'Multiple weak ratings', detail: `${lowScores.length} categories rated 3 or below` });
+            if (score2Hits.length >= 2) {
+                flags.push({
+                    type: 'concern',
+                    label: 'Multiple Weak Ratings',
+                    detail: `${score2Hits.length} areas rated inconsistent/average: ${score2Hits.join(', ')}`
+                });
             }
 
-            // C. Pattern detection — mixed strong + weak
-            const highScores = numericAnswers.filter(a => a.val >= 4);
-            const veryLow = numericAnswers.filter(a => a.val <= 2);
-            if (highScores.length >= 2 && veryLow.length >= 1) {
-                flags.push({ type: 'concern', label: 'Inconsistent ratings', detail: 'Mix of strong and weak scores from same reference' });
+            // =============================================
+            // G. Pattern: Inconsistency (mix of strong + weak)
+            // =============================================
+            const strongHits = performanceKeys.filter(k => answers[k] === 'excellent' || answers[k] === 'exceptional');
+            const weakHits = performanceKeys.filter(k => RED_FLAG_VALUES.includes(answers[k]));
+            if (strongHits.length >= 1 && weakHits.length >= 1) {
+                flags.push({
+                    type: 'concern',
+                    label: 'Inconsistent Ratings',
+                    detail: 'Mix of highest and lowest ratings from same reference'
+                });
             }
 
-            // D. Free text analysis
+            // =============================================
+            // H. Free text analysis (open_description)
+            // =============================================
             Object.entries(answers).forEach(([key, val]) => {
                 if (typeof val === 'string' && val.length > 20) {
                     const lower = val.toLowerCase();
                     const found = CONCERN_KEYWORDS.filter(kw => lower.includes(kw));
                     if (found.length > 0) {
-                        flags.push({ type: 'concern', label: 'Concerning language', detail: `Comment on "${key}" contains: ${found.join(', ')}` });
+                        flags.push({
+                            type: 'concern',
+                            label: 'Concerning Language',
+                            detail: `Written comment contains: ${found.join(', ')}`
+                        });
                     }
                 }
             });
 
+            // =============================================
+            // I. Low confidence signal: short relationship
+            // =============================================
+            if (answers.tenure === 'lt_6mo') {
+                flags.push({
+                    type: 'info',
+                    label: 'Short Relationship',
+                    detail: 'Reference knew candidate less than 6 months — lower confidence signal'
+                });
+            }
+
+            if (answers.work_frequency === 'rarely') {
+                flags.push({
+                    type: 'info',
+                    label: 'Limited Exposure',
+                    detail: 'Reference had limited direct working exposure'
+                });
+            }
+
             return flags;
         }
 
+        const TENURE_LABELS = {
+            'lt_6mo': 'Less than 6 months',
+            '6mo_2yr': '6 months – 2 years',
+            '2yr_5yr': '2 – 5 years',
+            '5yr_plus': '5+ years'
+        };
+
         function getRelationshipLength(response) {
             const answers = response.answers || {};
+            // Direct lookup for known tenure field
+            if (answers.tenure) {
+                return TENURE_LABELS[answers.tenure] || answers.tenure;
+            }
+            // Fallback: search for relationship-related keys
             for (const [key, val] of Object.entries(answers)) {
                 const k = key.toLowerCase();
-                if (k.includes('how long') || k.includes('relationship') || k.includes('known')) {
-                    return String(val);
+                if (k.includes('how long') || k.includes('relationship') || k.includes('known') || k.includes('tenure')) {
+                    return TENURE_LABELS[val] || String(val);
                 }
             }
             return null;
@@ -3141,41 +3296,104 @@ $$ LANGUAGE SQL;
             const criticalFlags = allFlags.filter(f => f.type === 'critical');
             const concerns = allFlags.filter(f => f.type === 'concern');
 
-            // Confidence
-            const relLengths = completed.map(r => getRelationshipLength(r)).filter(Boolean);
-            const shortRels = relLengths.filter(r => {
-                const lower = r.toLowerCase();
-                return lower.includes('less than') || lower.includes('< 6') || lower.includes('under 6') || lower.includes('few months');
-            });
+            // Confidence — based on tenure answer values
+            const shortRels = completed.filter(r => (r.answers || {}).tenure === 'lt_6mo');
+            const rarelyWorked = completed.filter(r => (r.answers || {}).work_frequency === 'rarely');
             let confidence = 'High';
             let confidenceReason = `Based on ${completed.length} completed reference${completed.length > 1 ? 's' : ''} with sufficient relationship depth.`;
-            if (completed.length <= 1 || shortRels.length > completed.length / 2) {
+            if (completed.length <= 1 || shortRels.length > completed.length / 2 || rarelyWorked.length > completed.length / 2) {
                 confidence = 'Low';
                 confidenceReason = completed.length <= 1
                     ? 'Only one reference survey completed — limited signal.'
-                    : 'Most references had short relationship durations.';
-            } else if (shortRels.length > 0 || completed.length === 2) {
+                    : 'Most references had short relationship durations or limited direct exposure.';
+            } else if (shortRels.length > 0 || rarelyWorked.length > 0 || completed.length === 2) {
                 confidence = 'Moderate';
                 confidenceReason = 'Some references had limited relationship depth or fewer surveys completed.';
             }
 
-            // Recommendation
+            // =============================================
+            // RECOMMENDATION: Gates + Score System
+            // =============================================
+            // Gates measure RISK. Scores measure PERFORMANCE.
+            // Gates override scores when negative.
+
             let recommendation, recClass;
+            let hardGate = false;
+            let softGate = false;
+            let gateReasons = [];
+
+            // Check each response for gate conditions
+            completed.forEach(r => {
+                const answers = r.answers || {};
+
+                // HARD GATES — override to negative outcome
+                // Q10: "Do not recommend"
+                if (answers.hire_recommendation === 'do_not_recommend') {
+                    hardGate = true;
+                    gateReasons.push('Reference explicitly would not recommend hiring');
+                }
+                // Q9: Significant conduct/safety concern
+                if (answers.concern_severity === 'significant') {
+                    hardGate = true;
+                    gateReasons.push('Significant conduct or patient safety concern reported');
+                }
+
+                // SOFT GATES — downgrade recommendation
+                // Q10: "Recommend with reservations"
+                if (answers.hire_recommendation === 'recommend_with_reservations') {
+                    softGate = true;
+                    gateReasons.push('Reference recommended with reservations');
+                }
+                // Q9: Moderate concern
+                if (answers.concern_severity === 'moderate') {
+                    softGate = true;
+                    gateReasons.push('Moderate conduct concern reported');
+                }
+
+                // Multiple score-2 answers (soft gate)
+                const scoredAnswers = [];
+                Object.entries(answers).forEach(([key, val]) => {
+                    // Check option-based scores by matching known answer values
+                    if (val === 'inconsistent' || val === 'average' || val === 'mixed') {
+                        scoredAnswers.push(key);
+                    }
+                });
+                if (scoredAnswers.length >= 2) {
+                    softGate = true;
+                    gateReasons.push(`Multiple areas rated as inconsistent/average (${scoredAnswers.length} categories)`);
+                }
+            });
+
+            // Any RED FLAG answers in performance questions (Q4-Q8) = hard gate
             if (criticalFlags.length > 0) {
-                recommendation = 'Needs Additional Review';
-                recClass = 'rec-needs-review';
-            } else if (avgScore >= 4.0 && concerns.length === 0) {
-                recommendation = 'Strong Consider';
-                recClass = 'rec-strong-consider';
-            } else if (avgScore >= 3.5) {
-                recommendation = concerns.length > 0 ? 'Consider with Caution' : 'Consider';
-                recClass = concerns.length > 0 ? 'rec-consider-caution' : 'rec-consider';
-            } else if (avgScore >= 2.5) {
-                recommendation = 'Consider with Caution';
-                recClass = 'rec-consider-caution';
+                hardGate = true;
+                if (!gateReasons.some(r => r.includes('red flag'))) {
+                    gateReasons.push(`${criticalFlags.length} red flag${criticalFlags.length > 1 ? 's' : ''} detected in performance ratings`);
+                }
+            }
+
+            // Apply gates, then fall through to score
+            if (hardGate) {
+                recommendation = 'Unfavorable Results — Additional Diligence Advised';
+                recClass = 'rec-unfavorable';
+            } else if (softGate) {
+                recommendation = 'Mixed Results — Review Recommended';
+                recClass = 'rec-mixed';
             } else {
-                recommendation = 'Needs Additional Review';
-                recClass = 'rec-needs-review';
+                // Score-based only (no gates triggered)
+                if (avgScore >= 3.5) {
+                    recommendation = 'Strongly Favorable';
+                    recClass = 'rec-strongly-favorable';
+                } else if (avgScore >= 2.5) {
+                    recommendation = 'Favorable';
+                    recClass = 'rec-favorable';
+                } else if (avgScore >= 2.0) {
+                    recommendation = 'Mixed Results — Review Recommended';
+                    recClass = 'rec-mixed';
+                } else {
+                    recommendation = 'Unfavorable Results — Additional Diligence Advised';
+                    recClass = 'rec-unfavorable';
+                }
             }
 
             // Collect written comments
@@ -3198,6 +3416,9 @@ $$ LANGUAGE SQL;
                 concerns,
                 recommendation,
                 recClass,
+                hardGate,
+                softGate,
+                gateReasons,
                 completedCount: completed.length,
                 totalRefs: responses.length,
                 comments,
@@ -3480,6 +3701,14 @@ $$ LANGUAGE SQL;
                         </div>
                     </div>
 
+                    ${e.gateReasons && e.gateReasons.length > 0 ? `
+                    <div class="eval-detail-section" style="background: ${e.hardGate ? '#fff5f5' : '#fffbf0'}; padding: 16px 20px; border-radius: 10px; border-left: 4px solid ${e.hardGate ? 'var(--danger)' : 'var(--warning)'};">
+                        <h3 style="margin-top: 0; color: ${e.hardGate ? 'var(--danger)' : 'var(--warning)'};">🚧 ${e.hardGate ? 'Hard Gate — Recommendation Override' : 'Soft Gate — Recommendation Downgraded'}</h3>
+                        <p style="font-size: 13px; color: #555; margin-bottom: 8px;">The following conditions ${e.hardGate ? 'override the score and require review' : 'triggered a downgrade regardless of score'}:</p>
+                        <ul>${e.gateReasons.map(r => `<li>${escapeHtml(r)}</li>`).join('')}</ul>
+                    </div>
+                    ` : ''}
+
                     <div class="eval-detail-section">
                         <h3>📊 Reference Breakdown</h3>
                         <p style="font-size: 13px; color: #888; margin-bottom: 12px;">${e.completedCount} of ${ev.totalInvitations} references completed · ${e.confidenceReason}</p>
@@ -3492,8 +3721,9 @@ $$ LANGUAGE SQL;
                     </div>
 
                     <div class="eval-detail-section" style="background: #f8f9fa; padding: 20px; border-radius: 10px; border-left: 4px solid var(--teal);">
-                        <h3 style="margin-top: 0;">📝 Hiring Summary</h3>
+                        <h3 style="margin-top: 0;">📝 Reference Summary</h3>
                         <p>${generateHiringSummary(c, e)}</p>
+                        <p style="font-size: 11px; color: #999; margin-top: 12px; font-style: italic; border-top: 1px solid #eee; padding-top: 10px;">${EVAL_DISCLAIMER}</p>
                     </div>
                 </div>
             `;
@@ -3504,18 +3734,20 @@ $$ LANGUAGE SQL;
             const e = evaluation;
             let summary = '';
 
-            if (e.score >= 4.0 && e.criticalFlags.length === 0 && e.concerns.length === 0) {
-                summary = `${escapeHtml(name)} received consistently strong feedback across ${e.completedCount} reference${e.completedCount > 1 ? 's' : ''}. Scores are high with no flags or concerns identified. The evaluation signal is ${e.confidence.toLowerCase()} confidence. This candidate can proceed with confidence.`;
-            } else if (e.criticalFlags.length > 0) {
-                summary = `${escapeHtml(name)} received ${e.criticalFlags.length} critical red flag${e.criticalFlags.length > 1 ? 's' : ''} across ${e.completedCount} reference${e.completedCount > 1 ? 's' : ''}. The overall score is ${e.score.toFixed(1)}/5.0. These flags warrant additional review or conversation before proceeding. ${e.concerns.length > 0 ? `There are also ${e.concerns.length} additional concern${e.concerns.length > 1 ? 's' : ''} noted.` : ''}`;
-            } else if (e.concerns.length > 0) {
-                summary = `${escapeHtml(name)} scored ${e.score.toFixed(1)}/5.0 across ${e.completedCount} reference${e.completedCount > 1 ? 's' : ''}. While no critical red flags were identified, ${e.concerns.length} concern${e.concerns.length > 1 ? 's were' : ' was'} noted. The feedback is ${e.score >= 3.5 ? 'generally positive but not without caveats' : 'mixed'}. Consider discussing flagged areas during the interview process.`;
+            if (e.hardGate) {
+                summary = `Based on reference survey results, ${escapeHtml(name)} scored ${e.score.toFixed(1)}/4.0 across ${e.completedCount} reference${e.completedCount > 1 ? 's' : ''}. However, ${e.gateReasons.length} risk signal${e.gateReasons.length > 1 ? 's were' : ' was'} identified: ${e.gateReasons.join('; ')}. These findings override the performance score and indicate additional diligence is advised before proceeding.`;
+            } else if (e.softGate) {
+                summary = `Based on reference survey results, ${escapeHtml(name)} scored ${e.score.toFixed(1)}/4.0 across ${e.completedCount} reference${e.completedCount > 1 ? 's' : ''}. While performance scores are ${e.score >= 3.0 ? 'generally positive' : 'mixed'}, the following signals were noted: ${e.gateReasons.join('; ')}. These areas may warrant further discussion during the evaluation process.`;
+            } else if (e.score >= 3.5) {
+                summary = `Based on reference survey results, ${escapeHtml(name)} received consistently strong feedback across ${e.completedCount} reference${e.completedCount > 1 ? 's' : ''} with a score of ${e.score.toFixed(1)}/4.0. No risk signals were identified — no red flags, no conduct concerns, and all references provided favorable assessments. Confidence level is ${e.confidence.toLowerCase()}.`;
             } else {
-                summary = `${escapeHtml(name)} scored ${e.score.toFixed(1)}/5.0 across ${e.completedCount} reference${e.completedCount > 1 ? 's' : ''}. The feedback is generally positive with no notable concerns. Confidence level is ${e.confidence.toLowerCase()}.`;
+                summary = `Based on reference survey results, ${escapeHtml(name)} scored ${e.score.toFixed(1)}/4.0 across ${e.completedCount} reference${e.completedCount > 1 ? 's' : ''}. No risk signals were identified. The feedback is generally positive with no notable concerns. Confidence level is ${e.confidence.toLowerCase()}.`;
             }
 
             return summary;
         }
+
+        const EVAL_DISCLAIMER = 'This summary reflects aggregated reference feedback and does not constitute a hiring recommendation by BolsterMed.';
 
         function backToResultsList() {
             document.getElementById('eval-detail-view').classList.add('hidden');
