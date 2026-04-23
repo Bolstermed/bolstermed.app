@@ -777,6 +777,74 @@
             color: #7b1fa2;
         }
 
+        .status-not-started {
+            background-color: #fafafa;
+            color: #999;
+            border: 1px solid #e0e0e0;
+        }
+
+        .status-refs-added {
+            background-color: #fff3e0;
+            color: var(--warning);
+        }
+
+        .status-surveys-sent {
+            background-color: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .status-in-progress {
+            background-color: #e8eaf6;
+            color: #3f51b5;
+        }
+
+        .status-ready-review {
+            background-color: #e8f5e9;
+            color: var(--success);
+        }
+
+        /* Progress bar in candidates table */
+        .progress-cell {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .progress-bar-bg {
+            width: 60px;
+            height: 6px;
+            background-color: var(--cream-dark);
+            border-radius: 3px;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.3s;
+        }
+
+        .progress-bar-fill.fill-none { width: 0; background-color: #ccc; }
+        .progress-bar-fill.fill-partial { background-color: #3498db; }
+        .progress-bar-fill.fill-complete { background-color: var(--success); }
+
+        .progress-text {
+            font-size: 13px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+
+        /* Candidate row updated time subtle styling */
+        .updated-stale {
+            color: var(--danger);
+            font-weight: 500;
+        }
+
+        .updated-recent {
+            color: var(--text-secondary);
+        }
+
         .score-good {
             color: var(--success);
             font-weight: 600;
@@ -2135,6 +2203,19 @@ $$ LANGUAGE SQL;
             });
         }
 
+        function getWorkflowStatus(candidate, invitations) {
+            const invs = invitations.filter(i => i.candidate_id === candidate.id);
+            const total = invs.length;
+            const completed = invs.filter(i => i.status === 'completed').length;
+            const sent = invs.filter(i => i.sent_at).length;
+
+            if (total === 0) return { label: 'Not Started', cls: 'not-started' };
+            if (completed === total) return { label: 'Ready for Review', cls: 'ready-review' };
+            if (completed > 0 || invs.some(i => i.status === 'opened')) return { label: 'In Progress', cls: 'in-progress' };
+            if (sent > 0) return { label: 'Surveys Sent', cls: 'surveys-sent' };
+            return { label: 'References Added', cls: 'refs-added' };
+        }
+
         function renderCandidatesTable() {
             const tbody = document.getElementById('candidates-tbody');
             const candidates = state.filteredCandidates;
@@ -2148,16 +2229,31 @@ $$ LANGUAGE SQL;
                 const invs = state.invitations.filter(i => i.candidate_id === c.id);
                 const completed = invs.filter(i => i.status === 'completed').length;
                 const total = invs.length;
+                const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
+                const fillClass = total === 0 ? 'fill-none' : (completed === total ? 'fill-complete' : 'fill-partial');
+
+                const status = getWorkflowStatus(c, state.invitations);
+
+                // Recency signal
+                const daysSinceUpdate = c.updated_at ? Math.floor((Date.now() - new Date(c.updated_at).getTime()) / (1000 * 60 * 60 * 24)) : null;
+                const updatedClass = daysSinceUpdate !== null && daysSinceUpdate > 7 ? 'updated-stale' : 'updated-recent';
 
                 return `
                     <tr class="clickable" onclick="openCandidateDetailView('${c.id}')">
                         <td><strong>${escapeHtml(c.first_name)} ${escapeHtml(c.last_name)}</strong></td>
                         <td>${escapeHtml(c.role_id || '-')}</td>
                         <td>${escapeHtml(c.department || '-')}</td>
-                        <td><span class="status-badge status-${c.status}">${c.status}</span></td>
-                        <td>${total > 0 ? completed + ' of ' + total : '0 of 0'}</td>
-                        <td>${formatDate(c.updated_at)}</td>
-                        <td><a href="javascript:" style="color: var(--teal); text-decoration: none; font-weight: 600;">View</a></td>
+                        <td><span class="status-badge status-${status.cls}">${status.label}</span></td>
+                        <td>
+                            <div class="progress-cell">
+                                <div class="progress-bar-bg">
+                                    <div class="progress-bar-fill ${fillClass}" style="width: ${pct}%"></div>
+                                </div>
+                                <span class="progress-text">${completed} of ${total}</span>
+                            </div>
+                        </td>
+                        <td><span class="${updatedClass}">${formatDate(c.updated_at)}</span></td>
+                        <td><a href="javascript:" style="color: var(--teal); text-decoration: none; font-weight: 600;">Open</a></td>
                     </tr>
                 `;
             }).join('');
