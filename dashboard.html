@@ -1942,11 +1942,11 @@ $$ LANGUAGE SQL;
 
                     <!-- AI Summary Section -->
                     <div class="detail-section">
-                        <div class="detail-section-title">AI Summary</div>
+                        <div class="detail-section-title">Evaluation Summary</div>
                         <div id="ai-summary-content">
                             <div class="ai-summary-placeholder">
-                                <div class="ai-summary-icon">🤖</div>
-                                <p>AI Summary will appear here once references have responded.</p>
+                                <div class="ai-summary-icon">📋</div>
+                                <p>Evaluation summary will generate once references have responded.</p>
                             </div>
                         </div>
                     </div>
@@ -2993,8 +2993,8 @@ $$ LANGUAGE SQL;
                 if (completedResponses.length === 0) {
                     aiSummaryContent.innerHTML = `
                         <div class="ai-summary-placeholder">
-                            <div class="ai-summary-icon">🤖</div>
-                            <p>AI Summary will appear here once references have responded.</p>
+                            <div class="ai-summary-icon">📋</div>
+                            <p>Evaluation summary will generate once references have responded.</p>
                         </div>
                     `;
                 } else {
@@ -3008,26 +3008,31 @@ $$ LANGUAGE SQL;
 
                     const strengthsHtml = strengths.length > 0
                         ? strengths.map(s => `<li>${escapeHtml(s)}</li>`).join('')
-                        : '<li style="color: #999;">Insufficient data to identify specific strengths.</li>';
+                        : '<li style="color: #999;">Insufficient completed references to identify specific strengths.</li>';
 
                     const concernsHtml = concernBullets.length > 0
                         ? concernBullets.map(s => `<li>${escapeHtml(s)}</li>`).join('')
-                        : '<li style="color: #999;">No meaningful concerns identified from submitted references.</li>';
+                        : '<li style="color: #999;">No material concerns identified based on submitted references.</li>';
 
                     const flagsHtml = evalResult.criticalFlags.length > 0
                         ? evalResult.criticalFlags.map(f => `<li style="color: var(--danger);"><strong>${escapeHtml(f.label)}</strong> — ${escapeHtml(f.detail)}</li>`).join('')
                         : '';
+
+                    const confidenceExplain = evalResult.confidenceReason || '';
 
                     aiSummaryContent.innerHTML = `
                         <div class="ai-summary-result">
                             <div class="summary-header">
                                 <div>
                                     <span class="summary-rec ${evalResult.recClass}">${evalResult.recommendation}</span>
-                                    <div style="margin-top: 6px; font-size: 12px; color: #888;">${tierSubtext}</div>
+                                    <div style="margin-top: 6px; font-size: 13px; color: #666;">${tierSubtext}</div>
                                 </div>
                                 <div style="text-align: right;">
                                     <div class="summary-score" style="color: ${evalResult.score >= 3.5 ? 'var(--success)' : (evalResult.score >= 2.5 ? '#333' : 'var(--danger)')}">${evalResult.score.toFixed(1)} <span style="font-size: 14px; font-weight: 400; color: #999;">/ 4.0</span></div>
-                                    <span class="eval-confidence confidence-${evalResult.confidence.toLowerCase()}" style="font-size: 11px; padding: 2px 8px;">${evalResult.confidence} confidence</span>
+                                    <div style="margin-top: 4px;">
+                                        <span class="eval-confidence confidence-${evalResult.confidence.toLowerCase()}" style="font-size: 11px; padding: 2px 8px;">${evalResult.confidence} confidence</span>
+                                    </div>
+                                    <div style="font-size: 11px; color: #999; margin-top: 4px; max-width: 220px;">${escapeHtml(confidenceExplain)}</div>
                                 </div>
                             </div>
 
@@ -3054,7 +3059,7 @@ $$ LANGUAGE SQL;
                             </div>
 
                             <div style="margin-top: 10px; text-align: right;">
-                                <span class="ai-summary-badge">Based on ${completedResponses.length} of ${totalInvs} reference${totalInvs !== 1 ? 's' : ''} · ${EVAL_DISCLAIMER}</span>
+                                <span class="ai-summary-badge">Based on ${completedResponses.length} of ${totalInvs} completed reference${totalInvs !== 1 ? 's' : ''}</span>
                             </div>
                         </div>
                     `;
@@ -3868,7 +3873,7 @@ $$ LANGUAGE SQL;
 
             const concernBulletsHtml = concernBullets.length > 0
                 ? concernBullets.map(s => `<li style="margin-bottom: 6px;">${escapeHtml(s)}</li>`).join('')
-                : '<li style="color: #999;">No meaningful concerns identified from submitted references.</li><li style="color: #999; font-size: 13px;">No additional review required based on current signal.</li>';
+                : '<li style="color: #999;">No material concerns identified based on submitted references.</li><li style="color: #999; font-size: 13px;">No additional review required based on current reference signal.</li>';
 
             // === RED FLAGS with expandable detail ===
             const flagsHtml = e.criticalFlags.length > 0
@@ -4067,7 +4072,7 @@ $$ LANGUAGE SQL;
             const e = evaluation;
             if (e.hardGate) return { text: 'Further review recommended based on identified concerns', cls: 'var(--danger)' };
             if (e.softGate) return { text: 'Review flagged areas before proceeding', cls: 'var(--warning)' };
-            return { text: 'No additional review required based on current signal', cls: 'var(--success)' };
+            return { text: 'No additional review required based on current reference signal', cls: 'var(--success)' };
         }
 
         const EVAL_DISCLAIMER = 'This summary reflects aggregated reference feedback and is intended to support, not replace, independent hiring decisions.';
