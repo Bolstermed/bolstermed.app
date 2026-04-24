@@ -3829,10 +3829,20 @@ $$ LANGUAGE SQL;
                 const e = ev.evaluation;
                 if (!e) return '';
 
-                const flagCount = e.criticalFlags.length + e.concerns.length;
-                const flagHtml = flagCount > 0
-                    ? `<span class="flag-icon"></span> <strong>${flagCount}</strong>`
-                    : '<span style="color: var(--success);">✓</span>';
+                const critCount = e.criticalFlags.length;
+                const concernCount = e.concerns.length;
+                let flagHtml;
+                if (critCount > 0) {
+                    flagHtml = `<span style="color: var(--danger); font-weight: 600; font-size: 13px;">${critCount} Flag${critCount > 1 ? 's' : ''}</span>`;
+                    if (concernCount > 0) {
+                        flagHtml += `<span style="color: #999; margin: 0 4px;">·</span><span style="color: var(--warning); font-weight: 600; font-size: 13px;">${concernCount} Concern${concernCount > 1 ? 's' : ''}</span>`;
+                    }
+                } else if (concernCount > 0) {
+                    const cColor = concernCount >= 2 ? '#e67e22' : 'var(--warning)';
+                    flagHtml = `<span style="color: ${cColor}; font-weight: 600; font-size: 13px;">${concernCount} Concern${concernCount > 1 ? 's' : ''}</span>`;
+                } else {
+                    flagHtml = '<span style="color: var(--success); font-weight: 500; font-size: 13px;">No Flags</span>';
+                }
 
                 return `
                     <tr class="clickable" onclick="showEvalDetail(${idx})">
