@@ -240,19 +240,19 @@
             height: 100vh;
             left: 0;
             top: 0;
+            display: flex;
+            flex-direction: column;
         }
 
         .sidebar-logo {
-            padding: 0 24px;
-            margin-bottom: 32px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            padding: 0 20px;
+            margin-bottom: 28px;
+            text-align: center;
         }
 
         .sidebar-logo-text {
             font-family: 'Playfair Display', serif;
-            font-size: 22px;
+            font-size: 28px;
             font-weight: 700;
             letter-spacing: -0.3px;
         }
@@ -265,11 +265,17 @@
             color: var(--teal);
         }
 
-        .sidebar-logo-icon {
-            width: 56px;
-            height: 56px;
-            flex-shrink: 0;
+        .sidebar-bottom-icon {
+            padding: 20px 0;
+            text-align: center;
+            margin-top: auto;
+        }
+
+        .sidebar-bottom-icon img {
+            width: 80px;
+            height: 80px;
             object-fit: contain;
+            opacity: 0.85;
         }
 
         .nav-item {
@@ -1706,7 +1712,6 @@ $$ LANGUAGE SQL;
         <!-- Sidebar -->
         <div class="sidebar">
             <div class="sidebar-logo">
-                <img class="sidebar-logo-icon" src="/LOGO.png" alt="B">
                 <span class="sidebar-logo-text"><span class="bolster">Bolster</span><span class="med">Med</span></span>
             </div>
             <nav id="sidebar-nav">
@@ -1714,6 +1719,9 @@ $$ LANGUAGE SQL;
                 <div class="nav-item" data-view="candidates">Candidates</div>
                 <div class="nav-item" data-view="results">Results</div>
             </nav>
+            <div class="sidebar-bottom-icon">
+                <img src="/LOGO.png" alt="BolsterMed">
+            </div>
         </div>
 
         <!-- Main Content -->
