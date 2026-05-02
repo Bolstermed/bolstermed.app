@@ -697,7 +697,6 @@ const app = {
                     reference_email: ref.email,
                     reference_phone: ref.phone || null,
                     relationship: ref.relationship || null,
-                    candidate_name: this.candidateData.name || null,
                     token: token,
                     status: 'pending',
                     expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
