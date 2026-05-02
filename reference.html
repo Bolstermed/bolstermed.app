@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BolsterMed - Complete Reference Survey</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --navy: #0f1f35;
+            --navy-mid: #162840;
+            --teal: #2db89a;
+            --teal-dim: #1e8f78;
+            --teal-light: rgba(45, 184, 154, 0.08);
+            --cream: #f4f1ec;
+            --cream-dark: #e8e4dc;
+            --white: #ffffff;
+            --text-dark: #0f1f35;
+            --text-mid: #4a5568;
+            --text-light: #8a97a8;
+            --danger: #c0392b;
+            --danger-light: #fdf0ef;
+            --success: #27ae60;
+            --success-light: #eafaf1;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body {
+            font-family: 'DM Sans', sans-serif;
+            color: var(--text-dark);
+            background: var(--cream);
+            min-height: 100vh;
+        }
+        h1, h2, h3 { font-family: 'Playfair Display', serif; font-weight: 700; }
+
+        /* ===== Header ===== */
+        header {
+            background: var(--navy);
+            padding: 1rem 1.5rem;
+            border-bottom: 3px solid var(--teal);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .header-inner {
+            max-width: 640px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .logo { font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 700; color: var(--white); }
+        .logo span { color: var(--teal); }
+        .header-right { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-light); }
+
+        /* ===== Main ===== */
+        main { max-width: 640px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+
+        /* ===== Progress Bar ===== */
+        .progress-wrap {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+        .progress-track {
+            height: 6px;
+            background: var(--cream-dark);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: var(--teal);
+            border-radius: 10px;
+            transition: width 0.4s ease;
+            width: 0%;
+        }
+        .progress-label {
+            font-size: 0.78rem;
+            color: var(--text-light);
+            margin-top: 0.4rem;
+            text-align: right;
+        }
+
+        /* ===== Cards ===== */
+        .card {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 1.75rem 1.5rem;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+            margin-bottom: 1.25rem;
+        }
+        .card-title {
+            font-size: 1.4rem;
+            color: var(--navy);
+            margin-bottom: 0.4rem;
+        }
+        .card-sub {
+            color: var(--text-mid);
+            font-size: 0.92rem;
+            line-height: 1.5;
+            margin-bottom: 1.5rem;
+        }
+
+        /* ===== Form Fields ===== */
+        .field { margin-bottom: 1.15rem; }
+        .field label {
+            display: block; font-size: 0.85rem;
+            font-weight: 600; color: var(--text-dark);
+            margin-bottom: 0.35rem;
+        }
+        .field input, .field textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1.5px solid var(--cream-dark);
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: 'DM Sans', sans-serif;
+            color: var(--text-dark);
+            transition: border-color 0.2s;
+        }
+        .field input:focus, .field textarea:focus {
+            outline: none;
+            border-color: var(--teal);
+            box-shadow: 0 0 0 3px var(--teal-light);
+        }
+        .field input[readonly] {
+            background: #f8f7f5; color: var(--text-mid); cursor: default;
+        }
+        .field .hint {
+            font-size: 0.78rem; color: var(--text-light); margin-top: 0.3rem;
+        }
+        .field textarea {
+            min-height: 100px; resize: vertical; line-height: 1.5;
+        }
+
+        /* ===== Buttons ===== */
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            padding: 0.85rem 2rem; border-radius: 8px;
+            font-size: 1rem; font-weight: 600;
+            font-family: 'DM Sans', sans-serif;
+            cursor: pointer; border: none; transition: all 0.2s;
+        }
+        .btn-primary { background: var(--teal); color: var(--white); width: 100%; }
+        .btn-primary:hover { background: var(--teal-dim); }
+        .btn-primary:disabled { background: var(--cream-dark); color: var(--text-light); cursor: not-allowed; }
+        .btn-nav {
+            display: flex; gap: 0.75rem; margin-top: 1.5rem;
+        }
+        .btn-back {
+            background: transparent; color: var(--text-mid);
+            border: 1.5px solid var(--cream-dark); flex: 0 0 auto;
+            padding: 0.85rem 1.5rem;
+        }
+        .btn-back:hover { border-color: var(--text-mid); }
+        .btn-next { flex: 1; }
+
+        /* ===== Question Card (Survey) ===== */
+        .q-card {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+            margin-bottom: 1rem;
+        }
+        .q-text {
+            font-size: 1.05rem;
+            font-weight: 500;
+            color: var(--text-dark);
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+        .q-required { color: var(--danger); margin-left: 2px; }
+
+        /* ===== Option Buttons (Mobile-friendly) ===== */
+        .opt-group { display: flex; flex-direction: column; gap: 0.5rem; }
+        .opt-btn {
+            display: flex; align-items: flex-start; gap: 0.75rem;
+            padding: 0.85rem 1rem;
+            border: 1.5px solid var(--cream-dark);
+            border-radius: 10px;
+            background: var(--white);
+            cursor: pointer;
+            transition: all 0.15s;
+            text-align: left;
+            min-height: 48px;
+        }
+        .opt-btn:hover { border-color: var(--teal); background: var(--teal-light); }
+        .opt-btn.selected {
+            border-color: var(--teal);
+            background: var(--teal-light);
+            box-shadow: 0 0 0 1px var(--teal);
+        }
+        .opt-btn.danger-opt.selected {
+            border-color: var(--danger);
+            background: var(--danger-light);
+            box-shadow: 0 0 0 1px var(--danger);
+        }
+        .opt-radio {
+            width: 20px; height: 20px; flex-shrink: 0;
+            border: 2px solid var(--cream-dark);
+            border-radius: 50%; margin-top: 1px;
+            position: relative; transition: all 0.15s;
+        }
+        .opt-btn.selected .opt-radio {
+            border-color: var(--teal);
+        }
+        .opt-btn.selected .opt-radio::after {
+            content: '';
+            position: absolute;
+            top: 3px; left: 3px;
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            background: var(--teal);
+        }
+        .opt-btn.danger-opt.selected .opt-radio { border-color: var(--danger); }
+        .opt-btn.danger-opt.selected .opt-radio::after { background: var(--danger); }
+        .opt-content { flex: 1; }
+        .opt-label { font-size: 0.95rem; font-weight: 500; color: var(--text-dark); }
+        .opt-desc { font-size: 0.82rem; color: var(--text-light); margin-top: 0.2rem; }
+
+        /* ===== Alert Box ===== */
+        .alert-box {
+            background: var(--danger-light);
+            border: 1px solid #e8b4b0;
+            color: var(--danger);
+            padding: 0.7rem 1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            margin-top: 0.75rem;
+        }
+
+        /* ===== Follow-up container ===== */
+        .follow-up {
+            margin-top: 0.75rem;
+            padding-left: 1rem;
+            border-left: 3px solid var(--teal);
+        }
+
+        /* ===== Section Header ===== */
+        .section-header {
+            display: flex; align-items: center; gap: 0.75rem;
+            margin-bottom: 1.25rem; margin-top: 0.5rem;
+        }
+        .section-num {
+            width: 32px; height: 32px;
+            background: var(--navy);
+            color: var(--white);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.85rem; font-weight: 600; flex-shrink: 0;
+        }
+        .section-title {
+            font-size: 1.1rem; color: var(--navy);
+        }
+
+        /* ===== Loading / Success ===== */
+        .loading {
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            min-height: 50vh; gap: 1.5rem;
+        }
+        .spinner {
+            width: 44px; height: 44px;
+            border: 3px solid var(--cream-dark);
+            border-top-color: var(--teal);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .success-screen {
+            display: flex; flex-direction: column;
+            align-items: center; text-align: center;
+            padding: 3rem 1rem;
+        }
+        .success-circle {
+            width: 72px; height: 72px;
+            background: var(--success);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+        .success-circle svg { width: 36px; height: 36px; stroke: white; }
+
+        .error-msg {
+            background: var(--danger-light); border: 1px solid #e8b4b0;
+            color: var(--danger); padding: 0.75rem 1rem;
+            border-radius: 8px; font-size: 0.9rem;
+            margin-bottom: 1rem; display: none;
+        }
+
+        /* ===== Confidential Banner ===== */
+        .conf-banner {
+            display: flex; align-items: center; gap: 0.5rem;
+            background: var(--navy-mid); color: var(--text-light);
+            padding: 0.6rem 1rem; border-radius: 8px;
+            font-size: 0.8rem; margin-bottom: 1.25rem;
+        }
+        .conf-banner svg { width: 16px; height: 16px; stroke: var(--teal); flex-shrink: 0; }
+
+        /* ===== Mic Button ===== */
+        .mic-wrap { position: relative; }
+        .mic-btn {
+            position: absolute; right: 8px; bottom: 8px;
+            width: 36px; height: 36px;
+            border: none; background: var(--cream);
+            border-radius: 50%; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s;
+        }
+        .mic-btn:hover { background: var(--teal-light); }
+        .mic-btn.recording { background: var(--danger-light); animation: pulse 1.5s ease infinite; }
+        .mic-btn svg { width: 18px; height: 18px; stroke: var(--text-mid); }
+        .mic-btn.recording svg { stroke: var(--danger); }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+
+        [hidden] { display: none !important; }
+
+        @media (max-width: 500px) {
+            .card { padding: 1.25rem 1rem; }
+            .q-card { padding: 1.25rem 1rem; }
+            main { padding: 1rem 0.75rem 3rem; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-inner">
+        <div class="logo">Bolster<span>Med</span></div>
+        <div class="header-right">Confidential Survey</div>
+    </div>
+</header>
+
+<main id="app">
+    <div class="loading">
+        <div class="spinner"></div>
+        <p style="color: var(--text-mid);">Loading survey...</p>
+    </div>
+</main>
+
+<script>
+const SUPABASE_URL = 'https://apluotdtsithufnrfdhv.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwbHVvdGR0c2l0aHVmbnJmZGh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDUwOTI5NTUsImV4cCI6MjA2MDY2ODk1NX0.xC45kFJb3YvnSawWBGRbdJOZxNZOoAA3bpaa_ihmsQ8';
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const survey = {
+    phase: 'loading', // loading, verify, survey, success, error
+    token: null,
+    invitation: null,
+    surveyConfig: null,
+    answers: {},
+    session: null,
+    isPreviewMode: false,
+
+    async init() {
+        // Parse token from URL path: /ref/TOKEN or /survey/TOKEN
+        const parts = window.location.pathname.split('/').filter(Boolean);
+        const route = parts[0];
+        const param = parts[1];
+
+        if (route === 'preview' && param) {
+            this.isPreviewMode = true;
+            await this.loadPreview(param);
+            return;
+        }
+
+        if ((route === 'ref' || route === 'survey') && param) {
+            this.token = param;
+        } else {
+            // Try query param
+            const urlParams = new URLSearchParams(window.location.search);
+            this.token = urlParams.get('token');
+        }
+
+        if (!this.token) {
+            this.showError('No Survey Link', 'Please use the link provided to you by email or text message.');
+            return;
+        }
+
+        await this.loadInvitation();
+    },
+
+    async loadInvitation() {
+        try {
+            const { data: inv, error } = await db
+                .from('survey_invitations')
+                .select('*')
+                .eq('token', this.token)
+                .single();
+
+            if (error || !inv) {
+                this.showError('Invalid Link', 'This survey link is invalid or has expired. Please contact the person who sent it.');
+                return;
+            }
+
+            if (inv.status === 'completed') {
+                this.showAlreadyDone();
+                return;
+            }
+
+            if (inv.expires_at && new Date(inv.expires_at) < new Date()) {
+                this.showError('Link Expired', 'This survey link has expired. Please contact the person who sent it.');
+                return;
+            }
+
+            this.invitation = inv;
+
+            // Mark as opened
+            if (inv.status === 'pending') {
+                await db.from('survey_invitations')
+                    .update({ status: 'opened', opened_at: new Date().toISOString() })
+                    .eq('id', inv.id);
+            }
+
+            // Check if already verified
+            if (inv.reference_user_id || inv.verified_at) {
+                await this.loadSurvey();
+            } else {
+                this.renderVerify();
+            }
+        } catch (err) {
+            console.error(err);
+            this.showError('Error', 'Something went wrong loading your survey.');
+        }
+    },
+
+    // ── Identity Verification ──
+    renderVerify() {
+        this.phase = 'verify';
+        const inv = this.invitation;
+        const app = document.getElementById('app');
+
+        app.innerHTML = `
+            <div class="conf-banner">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+                Your responses are 100% confidential and will not be shared with the candidate.
+            </div>
+
+            <div class="card">
+                <h2 class="card-title">Verify Your Identity</h2>
+                <p class="card-sub">To complete this confidential reference for <strong>${this.esc(inv.candidate_name || 'the candidate')}</strong>, please verify your identity below.</p>
+
+                <div class="error-msg" id="errorMsg"></div>
+
+                <div class="field">
+                    <label>Full Name</label>
+                    <input type="text" id="vName" value="${this.esc(inv.reference_name)}" readonly>
+                </div>
+                <div class="field">
+                    <label>Email Address</label>
+                    <input type="email" id="vEmail" value="${this.esc(inv.reference_email)}" readonly>
+                </div>
+                <div class="field">
+                    <label>Create Password</label>
+                    <input type="password" id="vPassword" placeholder="Choose a secure password" minlength="6">
+                    <div class="hint">Minimum 6 characters. This secures your reference account.</div>
+                </div>
+                <div class="field">
+                    <label>LinkedIn Profile <span style="color: var(--text-light); font-weight: 400;">(optional)</span></label>
+                    <input type="url" id="vLinkedin" placeholder="https://linkedin.com/in/yourname">
+                    <div class="hint">Helps validate your professional identity.</div>
+                </div>
+
+                <button class="btn btn-primary" id="verifyBtn" onclick="survey.handleVerify()">
+                    Continue to Survey
+                </button>
+            </div>
+        `;
+    },
+
+    async handleVerify() {
+        const password = document.getElementById('vPassword').value;
+        const linkedin = document.getElementById('vLinkedin').value;
+        const btn = document.getElementById('verifyBtn');
+
+        if (!password || password.length < 6) {
+            this.showFieldError('Password must be at least 6 characters.');
+            return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = 'Verifying...';
+        document.getElementById('errorMsg').style.display = 'none';
+
+        try {
+            const email = this.invitation.reference_email;
+            const name = this.invitation.reference_name;
+
+            // Try sign up
+            let { data: signUpData, error: signUpError } = await db.auth.signUp({
+                email,
+                password,
+                options: { data: { name, role_type: 'reference' } }
+            });
+
+            if (signUpError) {
+                if (signUpError.message.includes('already registered') || signUpError.message.includes('already been registered')) {
+                    const { data: signInData, error: signInError } = await db.auth.signInWithPassword({ email, password });
+                    if (signInError) {
+                        this.showFieldError('Incorrect password. If you previously verified, use the same password.');
+                        btn.disabled = false;
+                        btn.textContent = 'Continue to Survey';
+                        return;
+                    }
+                    this.session = signInData.session;
+                } else {
+                    throw signUpError;
+                }
+            } else {
+                this.session = signUpData.session;
+            }
+
+            // Link reference to user account
+            if (this.session) {
+                await db.from('survey_invitations').update({
+                    reference_user_id: this.session.user.id,
+                    reference_linkedin: linkedin || null,
+                    verified_at: new Date().toISOString()
+                }).eq('id', this.invitation.id);
+
+                if (linkedin) {
+                    await db.from('profiles').update({ linkedin_url: linkedin }).eq('id', this.session.user.id);
+                }
+            }
+
+            await this.loadSurvey();
+        } catch (err) {
+            console.error('Verify error:', err);
+            this.showFieldError(err.message || 'Verification failed. Please try again.');
+            btn.disabled = false;
+            btn.textContent = 'Continue to Survey';
+        }
+    },
+
+    // ── Load & Render Survey ──
+    async loadSurvey() {
+        const app = document.getElementById('app');
+        app.innerHTML = `<div class="loading"><div class="spinner"></div><p style="color: var(--text-mid);">Loading survey questions...</p></div>`;
+
+        try {
+            const roleId = this.invitation.role_id;
+            const { data: configData, error } = await db
+                .from('survey_configs')
+                .select('config')
+                .eq('role_id', roleId)
+                .single();
+
+            if (error || !configData) {
+                this.showError('Survey Not Found', 'The survey could not be loaded. Please try again later.');
+                return;
+            }
+
+            this.surveyConfig = configData.config;
+            this.renderSurvey();
+        } catch (err) {
+            console.error(err);
+            this.showError('Error', 'Failed to load survey.');
+        }
+    },
+
+    async loadPreview(roleId) {
+        const app = document.getElementById('app');
+        app.innerHTML = `<div class="loading"><div class="spinner"></div><p style="color: var(--text-mid);">Loading preview...</p></div>`;
+
+        try {
+            const { data, error } = await db.from('survey_configs').select('config').eq('role_id', roleId).single();
+            if (error || !data) {
+                this.showError('Not Found', 'No survey found for this role.');
+                return;
+            }
+            this.surveyConfig = data.config;
+            this.invitation = { reference_name: 'Preview User', candidate_name: 'Sample Candidate' };
+            this.renderSurvey();
+        } catch (err) {
+            this.showError('Error', 'Failed to load preview.');
+        }
+    },
+
+    renderSurvey() {
+        this.phase = 'survey';
+        const config = this.surveyConfig;
+        const app = document.getElementById('app');
+        const totalQ = this.countQuestions(config);
+
+        let html = `
+            <div class="conf-banner">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+                Your responses are 100% confidential and will not be shared with the candidate.
+            </div>
+
+            <div class="progress-wrap">
+                <div class="progress-track">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-label" id="progressLabel">0 of ${totalQ} questions</div>
+            </div>
+        `;
+
+        config.sections.forEach((section, si) => {
+            html += `
+                <div class="section-header">
+                    <div class="section-num">${si + 1}</div>
+                    <h3 class="section-title">${this.esc(section.title)}</h3>
+                </div>
+            `;
+
+            section.questions.forEach(q => {
+                html += this.renderQuestion(q, section.id);
+            });
+        });
+
+        html += `
+            <div class="btn-nav" style="margin-top: 2rem;">
+                <button class="btn btn-primary btn-next" id="submitBtn" disabled onclick="survey.handleSubmit()">
+                    ${this.isPreviewMode ? 'Preview Submit' : 'Submit Reference'}
+                </button>
+            </div>
+        `;
+
+        app.innerHTML = html;
+        this.attachListeners();
+    },
+
+    renderQuestion(q, sectionId) {
+        if (q.showWhen && !this.shouldShow(q)) return '';
+
+        let html = `<div class="q-card" data-qid="${q.id}" data-sid="${sectionId}">`;
+        html += `<div class="q-text">${this.esc(q.text)}`;
+        if (q.required) html += `<span class="q-required"> *</span>`;
+        html += `</div>`;
+
+        if (q.type === 'single_choice') {
+            html += `<div class="opt-group">`;
+            q.options.forEach(opt => {
+                const sel = this.answers[q.id] === opt.value ? 'selected' : '';
+                const danger = opt.flag === 'danger' ? 'danger-opt' : '';
+                html += `
+                <div class="opt-btn ${sel} ${danger}" data-qid="${q.id}" data-val="${this.esc(opt.value)}" onclick="survey.selectOption(this)">
+                    <div class="opt-radio"></div>
+                    <div class="opt-content">
+                        <div class="opt-label">${this.esc(opt.label)}</div>
+                        ${opt.description ? `<div class="opt-desc">${this.esc(opt.description)}</div>` : ''}
+                    </div>
+                </div>`;
+            });
+            html += `</div>`;
+
+            // Conditional follow-up
+            if (q.conditionalFollowUp) {
+                const show = this.answers[q.id] === q.conditionalFollowUp.triggerValue;
+                html += `<div class="follow-up" data-followup="${q.id}" ${show ? '' : 'hidden'}>`;
+                html += `<div style="font-size:0.8rem;color:var(--teal);font-weight:600;margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:0.5px;">Follow-up</div>`;
+                html += this.renderQuestion(q.conditionalFollowUp.question, 'followup');
+                html += `</div>`;
+            }
+        } else if (q.type === 'open_text') {
+            const val = this.answers[q.id] || '';
+            html += `<div class="mic-wrap">`;
+            html += `<textarea data-qid="${q.id}" placeholder="${this.esc(q.placeholder || 'Enter your response...')}" oninput="survey.onText(this)">${this.esc(val)}</textarea>`;
+            if (q.speechToText) {
+                html += `
+                <button type="button" class="mic-btn" title="Tap to dictate" data-qid="${q.id}" onclick="survey.startMic(this)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+                        <path d="M12 1a3 3 0 0 0-3 3v12a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                        <line x1="12" y1="19" x2="12" y2="23"/>
+                        <line x1="8" y1="23" x2="16" y2="23"/>
+                    </svg>
+                </button>`;
+            }
+            html += `</div>`;
+        }
+
+        html += `</div>`;
+        return html;
+    },
+
+    selectOption(el) {
+        const qid = el.dataset.qid;
+        const val = el.dataset.val;
+        this.answers[qid] = val;
+
+        // Update UI
+        el.closest('.opt-group').querySelectorAll('.opt-btn').forEach(b => b.classList.remove('selected'));
+        el.classList.add('selected');
+
+        // Show alert if needed
+        const q = this.getQ(qid);
+        if (q) {
+            const opt = q.options.find(o => o.value === val);
+            if (opt && opt.alert) {
+                let alertEl = el.closest('.q-card').querySelector('.alert-box');
+                if (!alertEl) {
+                    alertEl = document.createElement('div');
+                    alertEl.className = 'alert-box';
+                    el.closest('.opt-group').after(alertEl);
+                }
+                alertEl.textContent = opt.alert;
+            } else {
+                const alertEl = el.closest('.q-card').querySelector('.alert-box');
+                if (alertEl) alertEl.remove();
+            }
+        }
+
+        // Follow-ups
+        this.updateFollowups();
+        this.updateProgress();
+        this.updateSubmit();
+    },
+
+    onText(el) {
+        this.answers[el.dataset.qid] = el.value;
+        this.updateProgress();
+        this.updateSubmit();
+    },
+
+    updateFollowups() {
+        document.querySelectorAll('[data-followup]').forEach(fu => {
+            const qid = fu.dataset.followup;
+            const q = this.getQ(qid);
+            if (q && q.conditionalFollowUp) {
+                fu.hidden = this.answers[qid] !== q.conditionalFollowUp.triggerValue;
+            }
+        });
+    },
+
+    updateProgress() {
+        const visible = this.getVisibleQuestions();
+        const answered = visible.filter(q => this.answers[q.id] !== undefined && this.answers[q.id] !== '');
+        const pct = visible.length > 0 ? (answered.length / visible.length) * 100 : 0;
+
+        const fill = document.getElementById('progressFill');
+        const label = document.getElementById('progressLabel');
+        if (fill) fill.style.width = pct + '%';
+        if (label) label.textContent = `${answered.length} of ${visible.length} questions`;
+    },
+
+    updateSubmit() {
+        const btn = document.getElementById('submitBtn');
+        if (!btn) return;
+        const visible = this.getVisibleQuestions();
+        const required = visible.filter(q => q.required);
+        const allDone = required.every(q => this.answers[q.id] !== undefined && this.answers[q.id] !== '');
+        btn.disabled = !allDone;
+    },
+
+    async handleSubmit() {
+        if (this.isPreviewMode) {
+            this.showSuccess();
+            return;
+        }
+
+        const btn = document.getElementById('submitBtn');
+        btn.disabled = true;
+        btn.textContent = 'Submitting...';
+
+        try {
+            const score = this.computeScore();
+            const flags = this.collectFlags();
+
+            // Build validation signals
+            const signals = {
+                verified_email: !!this.invitation.verified_at,
+                verified_identity: !!this.invitation.reference_user_id,
+                has_linkedin: !!(this.invitation.reference_linkedin),
+                relationship: this.invitation.relationship || null,
+                submission_timestamp: new Date().toISOString(),
+                submission_token: this.token,
+            };
+
+            const { error: insertErr } = await db.from('survey_responses').insert([{
+                invitation_id: this.invitation.id,
+                candidate_id: this.invitation.candidate_id,
+                org_id: this.invitation.org_id,
+                role_id: this.invitation.role_id,
+                answers: this.answers,
+                composite_score: score,
+                flags: flags,
+                validation_signals: signals,
+                submitted_at: new Date().toISOString(),
+            }]);
+
+            if (insertErr) throw new Error('Failed to save: ' + insertErr.message);
+
+            await db.from('survey_invitations')
+                .update({ status: 'completed', completed_at: new Date().toISOString() })
+                .eq('id', this.invitation.id);
+
+            this.showSuccess();
+        } catch (err) {
+            console.error('Submit error:', err);
+            alert('Error submitting. Please try again.\n\n' + err.message);
+            btn.disabled = false;
+            btn.textContent = 'Submit Reference';
+        }
+    },
+
+    // ── Score / Flags (same logic as original) ──
+    computeScore() {
+        let total = 0, count = 0;
+        this.surveyConfig.sections.forEach(s => {
+            s.questions.forEach(q => {
+                if (q.type === 'single_choice' && this.answers[q.id]) {
+                    const opt = q.options.find(o => o.value === this.answers[q.id]);
+                    if (opt && typeof opt.score === 'number') { total += opt.score; count++; }
+                }
+                if (q.conditionalFollowUp && this.answers[q.id] === q.conditionalFollowUp.triggerValue) {
+                    const fq = q.conditionalFollowUp.question;
+                    if (fq.type === 'single_choice' && this.answers[fq.id]) {
+                        const opt = fq.options.find(o => o.value === this.answers[fq.id]);
+                        if (opt && typeof opt.score === 'number') { total += opt.score; count++; }
+                    }
+                }
+            });
+        });
+        return count > 0 ? total / count : null;
+    },
+
+    collectFlags() {
+        const flags = [];
+        this.surveyConfig.sections.forEach(s => {
+            s.questions.forEach(q => {
+                if (q.type === 'single_choice' && this.answers[q.id]) {
+                    const opt = q.options.find(o => o.value === this.answers[q.id]);
+                    if (opt && opt.flag === 'danger') flags.push(q.id);
+                }
+                if (q.conditionalFollowUp && this.answers[q.id] === q.conditionalFollowUp.triggerValue) {
+                    const fq = q.conditionalFollowUp.question;
+                    if (fq.type === 'single_choice' && this.answers[fq.id]) {
+                        const opt = fq.options.find(o => o.value === this.answers[fq.id]);
+                        if (opt && opt.flag === 'danger') flags.push(fq.id);
+                    }
+                }
+            });
+        });
+        return flags.length > 0 ? flags : null;
+    },
+
+    // ── Helpers ──
+    getVisibleQuestions() {
+        const all = [];
+        this.surveyConfig.sections.forEach(s => {
+            s.questions.forEach(q => {
+                if (this.shouldShow(q)) {
+                    all.push(q);
+                    if (q.conditionalFollowUp && this.answers[q.id] === q.conditionalFollowUp.triggerValue) {
+                        all.push(q.conditionalFollowUp.question);
+                    }
+                }
+            });
+        });
+        return all;
+    },
+
+    shouldShow(q) {
+        if (!q.showWhen) return true;
+        const { questionId, branch } = q.showWhen;
+        const ans = this.answers[questionId];
+        if (!ans) return false;
+        const parent = this.getQ(questionId);
+        if (!parent) return false;
+        const opt = parent.options.find(o => o.value === ans);
+        return opt && opt.branch === branch;
+    },
+
+    getQ(id) {
+        let result = null;
+        this.surveyConfig.sections.forEach(s => {
+            s.questions.forEach(q => {
+                if (q.id === id) result = q;
+                if (q.conditionalFollowUp && q.conditionalFollowUp.question.id === id)
+                    result = q.conditionalFollowUp.question;
+            });
+        });
+        return result;
+    },
+
+    countQuestions(config) {
+        let c = 0;
+        config.sections.forEach(s => { c += s.questions.length; });
+        return c;
+    },
+
+    attachListeners() {
+        // Textarea change events (for non-oninput scenarios)
+        document.querySelectorAll('textarea[data-qid]').forEach(ta => {
+            ta.addEventListener('change', () => {
+                this.answers[ta.dataset.qid] = ta.value;
+                this.updateProgress();
+                this.updateSubmit();
+            });
+        });
+    },
+
+    startMic(button) {
+        const qid = button.dataset.qid;
+        const textarea = document.querySelector(`textarea[data-qid="${qid}"]`);
+        if (!textarea) return;
+
+        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SR) { alert('Speech-to-text not supported in this browser. Try Chrome or Safari.'); return; }
+
+        const rec = new SR();
+        rec.continuous = true;
+        rec.interimResults = true;
+        rec.lang = 'en-US';
+
+        button.classList.add('recording');
+        button.title = 'Listening... tap to stop';
+
+        rec.onresult = (e) => {
+            for (let i = e.resultIndex; i < e.results.length; i++) {
+                if (e.results[i].isFinal) {
+                    textarea.value += (textarea.value ? ' ' : '') + e.results[i][0].transcript;
+                    this.answers[qid] = textarea.value;
+                    this.updateProgress();
+                    this.updateSubmit();
+                }
+            }
+        };
+        rec.onerror = (e) => { if (e.error !== 'no-speech') console.error(e.error); };
+        rec.onend = () => { button.classList.remove('recording'); button.title = 'Tap to dictate'; };
+        button.onclick = (e) => { e.preventDefault(); rec.abort(); };
+        rec.start();
+    },
+
+    showSuccess() {
+        document.getElementById('app').innerHTML = `
+            <div class="success-screen">
+                <div class="success-circle">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                </div>
+                <h2 style="color: var(--navy); margin-bottom: 0.5rem;">Reference Submitted</h2>
+                <p style="color: var(--text-mid); max-width: 400px; line-height: 1.6; margin-bottom: 2rem;">
+                    Thank you for completing this confidential reference. Your feedback has been securely recorded.
+                </p>
+                <div class="card" style="max-width: 360px; text-align: left; padding: 1.25rem;">
+                    <p style="font-size: 0.88rem; color: var(--text-mid); line-height: 1.5;">
+                        <strong style="color: var(--navy);">Save your reference history.</strong>
+                        Your verified account lets you track references you've provided across organizations.
+                    </p>
+                </div>
+            </div>
+        `;
+    },
+
+    showAlreadyDone() {
+        document.getElementById('app').innerHTML = `
+            <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;text-align:center;padding:2rem;">
+                <div style="font-size:2.5rem;margin-bottom:1rem;">&#10003;</div>
+                <div class="card" style="max-width:440px;">
+                    <h2 class="card-title">Already Submitted</h2>
+                    <p class="card-sub">This reference has already been completed. Thank you for your feedback!</p>
+                </div>
+            </div>`;
+    },
+
+    showError(title, msg) {
+        document.getElementById('app').innerHTML = `
+            <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;text-align:center;padding:2rem;">
+                <div style="font-size:2.5rem;margin-bottom:1rem;">&#9888;&#65039;</div>
+                <div class="card" style="max-width:440px;">
+                    <h2 class="card-title">${this.esc(title)}</h2>
+                    <p class="card-sub">${this.esc(msg)}</p>
+                </div>
+            </div>`;
+    },
+
+    showFieldError(msg) {
+        const el = document.getElementById('errorMsg');
+        if (el) { el.textContent = msg; el.style.display = 'block'; }
+    },
+
+    esc(t) {
+        if (!t) return '';
+        const m = {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'};
+        return String(t).replace(/[&<>"']/g, c => m[c]);
+    }
+};
+
+document.addEventListener('DOMContentLoaded', () => survey.init());
+</script>
+</body>
+</html>
