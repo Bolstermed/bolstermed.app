@@ -5,8 +5,13 @@
   "rewrites": [
     { "source": "/dashboard", "destination": "/dashboard.html" },
     { "source": "/dashboard/(.*)", "destination": "/dashboard.html" },
+    { "source": "/candidate", "destination": "/candidate.html" },
+    { "source": "/candidate/(.*)", "destination": "/candidate.html" },
+    { "source": "/ref/(.*)", "destination": "/reference.html" },
     { "source": "/privacy", "destination": "/privacy.html" },
     { "source": "/terms", "destination": "/terms.html" },
+    { "source": "/survey/(.*)", "destination": "/reference.html" },
+    { "source": "/preview/(.*)", "destination": "/reference.html" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
