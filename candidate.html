@@ -396,30 +396,47 @@ const app = {
 
     async loadToken() {
         try {
-            const { data, error } = await db
+            // Step 1: Get token record
+            const { data: tokenData, error: tokenErr } = await db
                 .from('candidate_tokens')
-                .select('*, candidates(*)')
+                .select('*')
                 .eq('token', this.token)
                 .single();
 
-            if (error || !data) {
+            if (tokenErr || !tokenData) {
+                console.error('Token lookup error:', tokenErr);
                 this.showError('Invalid Link', 'This link is invalid or has expired. Please contact your hiring coordinator.');
                 return;
             }
 
-            if (data.expires_at && new Date(data.expires_at) < new Date()) {
+            if (tokenData.expires_at && new Date(tokenData.expires_at) < new Date()) {
                 this.showError('Link Expired', 'This link has expired. Please contact your hiring coordinator for a new one.');
                 return;
             }
 
-            this.tokenData = data;
-            this.candidateData = data.candidates;
+            // Step 2: Get candidate record separately
+            const { data: candidate, error: candErr } = await db
+                .from('candidates')
+                .select('*')
+                .eq('id', tokenData.candidate_id)
+                .single();
+
+            if (candErr || !candidate) {
+                console.error('Candidate lookup error:', candErr);
+                this.showError('Invalid Link', 'Could not find the associated candidate record.');
+                return;
+            }
+
+            // Normalize name field
+            candidate.name = [candidate.first_name, candidate.last_name].filter(Boolean).join(' ');
+
+            this.tokenData = tokenData;
+            this.candidateData = candidate;
 
             // Check if already has account
             const { data: { session } } = await db.auth.getSession();
             if (session) {
                 this.session = session;
-                // Check if this candidate already verified
                 if (this.candidateData.candidate_user_id) {
                     await this.loadCandidateDashboard();
                     return;
@@ -751,6 +768,7 @@ const app = {
                 return;
             }
 
+            candidate.name = [candidate.first_name, candidate.last_name].filter(Boolean).join(' ');
             this.candidateData = candidate;
 
             // Load invitations for this candidate
