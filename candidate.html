@@ -683,7 +683,7 @@ const app = {
         try {
             // Call API to send invitations for each reference
             for (const ref of valid) {
-                const response = await fetch('/api/submit-candidate-references', {
+                const response = await fetch('/api/submit-refs', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
