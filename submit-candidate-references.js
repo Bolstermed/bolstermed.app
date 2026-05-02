@@ -1,6 +1,7 @@
 // BolsterMed - Submit Candidate References
 // Called by candidate.html when a candidate submits their reference contacts.
 // Creates survey invitations and sends email + SMS notifications.
+// Uses direct Supabase REST API (no npm dependency needed).
 
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
@@ -23,45 +24,53 @@ export default async function handler(req, res) {
             return res.status(400).json({ error: 'Missing required fields' });
         }
 
-        // ── 1. Create Supabase client with service role ──
-        const { createClient } = await import('@supabase/supabase-js');
-        const supabase = createClient(
-            process.env.SUPABASE_URL || 'https://apluotdtsithufnrfdhv.supabase.co',
-            process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY
-        );
+        const SUPABASE_URL = process.env.SUPABASE_URL || 'https://apluotdtsithufnrfdhv.supabase.co';
+        const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
 
-        // ── 2. Generate unique survey token ──
+        // ── 1. Generate unique survey token ──
         const crypto = await import('crypto');
         const token = crypto.randomBytes(32).toString('hex');
 
-        // ── 3. Create survey invitation ──
-        const { data: invitation, error: invError } = await supabase
-            .from('survey_invitations')
-            .insert([{
-                candidate_id: candidateId,
-                org_id: orgId,
-                role_id: roleId || 'ed-physician',
-                reference_name: referenceName,
-                reference_email: referenceEmail,
-                reference_phone: referencePhone || null,
-                relationship: relationship || null,
-                token: token,
-                status: 'pending',
-                expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-            }])
-            .select()
-            .single();
+        // ── 2. Create survey invitation via Supabase REST API ──
+        const invPayload = {
+            candidate_id: candidateId,
+            org_id: orgId,
+            role_id: roleId || 'ed-physician',
+            reference_name: referenceName,
+            reference_email: referenceEmail,
+            reference_phone: referencePhone || null,
+            relationship: relationship || null,
+            candidate_name: candidateName || null,
+            token: token,
+            status: 'pending',
+            expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        };
 
-        if (invError) {
-            console.error('Invitation insert error:', invError);
-            return res.status(500).json({ error: 'Failed to create invitation: ' + invError.message });
+        const invRes = await fetch(`${SUPABASE_URL}/rest/v1/survey_invitations`, {
+            method: 'POST',
+            headers: {
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`,
+                'Content-Type': 'application/json',
+                'Prefer': 'return=representation',
+            },
+            body: JSON.stringify(invPayload),
+        });
+
+        if (!invRes.ok) {
+            const errText = await invRes.text();
+            console.error('Invitation insert error:', errText);
+            return res.status(500).json({ error: 'Failed to create invitation: ' + errText });
         }
 
-        // ── 4. Build survey URL (uses new reference portal) ──
+        const invitations = await invRes.json();
+        const invitation = Array.isArray(invitations) ? invitations[0] : invitations;
+
+        // ── 3. Build survey URL ──
         const baseUrl = process.env.BASE_URL || 'https://bolstermed.app';
         const surveyUrl = `${baseUrl}/ref/${token}`;
 
-        // ── 5. Send notifications ──
+        // ── 4. Send notifications ──
         const results = { email: null, sms: null, invitation_id: invitation.id };
 
         // EMAIL via Resend
@@ -88,7 +97,7 @@ export default async function handler(req, res) {
                 Hi ${referenceName},
             </p>
             <p style="color:#4a5568;font-size:16px;line-height:1.6;margin-bottom:16px;">
-                A healthcare organization has requested your professional reference for <strong>${candidateName}</strong>. Your feedback is confidential and will be used to support their hiring evaluation.
+                A healthcare organization has requested your professional reference for <strong>${candidateName || 'a candidate'}</strong>. Your feedback is confidential and will be used to support their hiring evaluation.
             </p>
             <p style="color:#4a5568;font-size:16px;line-height:1.6;margin-bottom:32px;">
                 The survey takes approximately <strong>5 minutes</strong> to complete.
@@ -126,7 +135,7 @@ export default async function handler(req, res) {
                     body: JSON.stringify({
                         from: process.env.RESEND_FROM_EMAIL || 'BolsterMed <noreply@bolstermed.app>',
                         to: [referenceEmail],
-                        subject: `Reference Request for ${candidateName} - BolsterMed`,
+                        subject: `Reference Request for ${candidateName || 'a candidate'} - BolsterMed`,
                         html: emailHtml,
                     }),
                 });
@@ -153,7 +162,7 @@ export default async function handler(req, res) {
                     else if (phone.length === 10) phone = '+1' + phone;
                 }
 
-                const smsBody = `Hi ${referenceName}, you've been asked to provide a professional reference for ${candidateName}. It takes about 5 min. Please complete it here: ${surveyUrl} - BolsterMed`;
+                const smsBody = `Hi ${referenceName}, you've been asked to provide a professional reference for ${candidateName || 'a candidate'}. It takes about 5 min. Please complete it here: ${surveyUrl} - BolsterMed`;
 
                 const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_SID}/Messages.json`;
                 const twilioAuth = Buffer.from(`${TWILIO_SID}:${TWILIO_TOKEN}`).toString('base64');
@@ -180,10 +189,16 @@ export default async function handler(req, res) {
             }
         }
 
-        // Update invitation status to 'sent'
-        await supabase.from('survey_invitations')
-            .update({ status: 'sent' })
-            .eq('id', invitation.id);
+        // ── 5. Update invitation status to 'sent' ──
+        await fetch(`${SUPABASE_URL}/rest/v1/survey_invitations?id=eq.${invitation.id}`, {
+            method: 'PATCH',
+            headers: {
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ status: 'sent' }),
+        });
 
         return res.status(200).json(results);
 
